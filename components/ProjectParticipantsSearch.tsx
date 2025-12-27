@@ -148,7 +148,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
   return (
     <div ref={containerRef} className="w-full">
-      <Card className="shadow-2xl border-none rounded-[1.5rem] lg:rounded-[2.5rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl mt-4 overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all">
+      <Card className="shadow-2xl border-none rounded-[1.5rem] lg:rounded-[2.5rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all">
         <div className="flex flex-col gap-2 lg:gap-6">
           {/* Header */}
           <div className="flex items-center justify-between gap-2 px-1">
