@@ -337,6 +337,37 @@ export const DebugView: React.FC<DebugViewProps> = ({
                    <input type="text" value={campusSearchId} onChange={(e) => setCampusSearchId(e.target.value)} placeholder="Campus UUID" className="w-full px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none font-mono text-xs" />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">limit <span className="text-[9px] text-gray-400 font-normal normal-case">(max 1000)</span></label>
+                  <input 
+                    type="number" 
+                    min="0" 
+                    max="1000" 
+                    value={campusLimit} 
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (e.target.value === '') setCampusLimit('');
+                      else if (!isNaN(val)) setCampusLimit(String(Math.min(1000, Math.max(0, val))));
+                    }} 
+                    className="w-full px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none font-mono text-xs appearance-none" 
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">offset</label>
+                  <input 
+                    type="number" 
+                    min="0"
+                    value={campusOffset} 
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (e.target.value === '') setCampusOffset('');
+                      else if (!isNaN(val)) setCampusOffset(String(Math.max(0, val)));
+                    }} 
+                    className="w-full px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none font-mono text-xs appearance-none" 
+                  />
+                </div>
+              </div>
             </div>
             <div className={`flex flex-col gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && loadingEndpoint !== '/v1/campuses' ? 'opacity-50' : ''}`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -348,7 +379,10 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">All campuses</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2">
-                  <Button variant={loadingEndpoint === '/v1/campuses' ? 'primary' : 'secondary'} className={`w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black transition-all ${loadingEndpoint === '/v1/campuses' ? 'bg-amber-500 text-white' : 'hover:bg-amber-500 hover:text-white'}`} onClick={() => onCacheApiCall('/v1/campuses', 's21_campuses_cache', 'Campuses')} isLoading={loadingEndpoint === '/v1/campuses'} disabled={isAnyLoading && loadingEndpoint !== '/v1/campuses'} > Try </Button>
+                  <Button variant={loadingEndpoint === '/v1/campuses' ? 'primary' : 'secondary'} className={`w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black transition-all ${loadingEndpoint === '/v1/campuses' ? 'bg-amber-500 text-white' : 'hover:bg-amber-500 hover:text-white'}`} 
+                    onClick={() => onCacheApiCall(`/v1/campuses?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 's21_campuses_cache', 'Campuses')} 
+                    isLoading={loadingEndpoint?.includes('/v1/campuses')} 
+                    disabled={isAnyLoading && loadingEndpoint !== '/v1/campuses'} > Try </Button>
                   <Button variant="secondary" className="w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenCached('s21_campuses_cache', 'Campuses')} disabled={isAnyLoading} > Cache </Button>
                 </div>
               </div>
