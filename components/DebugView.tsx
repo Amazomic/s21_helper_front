@@ -14,6 +14,12 @@ interface DebugViewProps {
   onOpenCached: (cacheKey: string, title: string) => void;
 }
 
+interface CachedCampus {
+  id: string;
+  shortName: string;
+  fullName: string;
+}
+
 const DebugRow = ({ method, path, desc, onClick, isLoading, isAnyLoading }: any) => (
   <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && !isLoading ? 'opacity-50' : ''}`}>
     <div className="min-w-0 flex-1">
@@ -111,6 +117,22 @@ export const DebugView: React.FC<DebugViewProps> = ({
   const [campusOffset, setCampusOffset] = useState<string>('0');
 
   const [genericId, setGenericId] = useState('');
+  const [cachedCampuses, setCachedCampuses] = useState<CachedCampus[]>([]);
+
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem('s21_campuses_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        const data = parsed.response || parsed;
+        if (Array.isArray(data.campuses)) {
+          setCachedCampuses(data.campuses);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to load cached campuses for debug view", e);
+    }
+  }, []);
 
   const getEncoded = (val: string, label: string) => {
     const trimmed = val.trim();
@@ -232,7 +254,23 @@ export const DebugView: React.FC<DebugViewProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">campusId <span className="text-[9px] text-gray-400 normal-case">(uuid, query)</span></label>
-                <input type="text" value={projCampusId} onChange={(e) => setProjCampusId(e.target.value)} placeholder="e.g. ff19a3a7-..." className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" />
+                <div className="flex flex-col gap-2">
+                   {cachedCampuses.length > 0 && (
+                      <select 
+                        className="w-full px-4 py-2 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none text-xs"
+                        onChange={(e) => { if(e.target.value) setProjCampusId(e.target.value); }}
+                        value={cachedCampuses.find(c => c.id === projCampusId) ? projCampusId : ""}
+                      >
+                         <option value="" disabled>Select cached campus...</option>
+                         {cachedCampuses.map(c => (
+                           <option key={c.id} value={c.id}>{c.shortName}</option>
+                         ))}
+                         <option value="" disabled>──────────</option>
+                         <option value="custom">Manual UUID below</option>
+                      </select>
+                   )}
+                   <input type="text" value={projCampusId} onChange={(e) => setProjCampusId(e.target.value)} placeholder="e.g. ff19a3a7-..." className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" />
+                </div>
               </div>
             </div>
             <DebugRow method="GET" path="/v1/projects/{projectId}" desc="Returns project information by ID" onClick={() => { const id = getEncoded(projId, 'Project ID'); if(id) onApiCall(`/v1/projects/${id}`, 'Project Info'); }} isLoading={loadingEndpoint === `/v1/projects/${projId}`} isAnyLoading={isAnyLoading} />
@@ -281,7 +319,23 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   <label className="text-[10px] font-black uppercase text-amber-700 dark:text-amber-400 tracking-wider">campusId <span className="text-red-500 font-bold">*</span></label>
                   <span className="text-[9px] text-gray-400 font-mono italic">(uuid)</span>
                 </div>
-                <input type="text" value={campusSearchId} onChange={(e) => setCampusSearchId(e.target.value)} placeholder="Campus UUID" className="w-full px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none font-mono text-xs" />
+                <div className="flex flex-col gap-2">
+                   {cachedCampuses.length > 0 && (
+                      <select 
+                        className="w-full px-4 py-2 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none text-xs"
+                        onChange={(e) => { if(e.target.value) setCampusSearchId(e.target.value); }}
+                        value={cachedCampuses.find(c => c.id === campusSearchId) ? campusSearchId : ""}
+                      >
+                         <option value="" disabled>Select cached campus...</option>
+                         {cachedCampuses.map(c => (
+                           <option key={c.id} value={c.id}>{c.shortName}</option>
+                         ))}
+                         <option value="" disabled>──────────</option>
+                         <option value="custom">Manual UUID below</option>
+                      </select>
+                   )}
+                   <input type="text" value={campusSearchId} onChange={(e) => setCampusSearchId(e.target.value)} placeholder="Campus UUID" className="w-full px-4 py-2.5 rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-amber-500 outline-none font-mono text-xs" />
+                </div>
               </div>
             </div>
             <div className={`flex flex-col gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && loadingEndpoint !== '/v1/campuses' ? 'opacity-50' : ''}`}>
