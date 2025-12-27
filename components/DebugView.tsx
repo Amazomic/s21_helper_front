@@ -19,7 +19,7 @@ const DebugRow = ({ method, path, desc, onClick, isLoading, isAnyLoading }: any)
     <div className="min-w-0 flex-1">
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase">{method}</span>
-        <code className="text-xs font-mono text-gray-600 dark:text-gray-300 truncate block">{path}</code>
+        <span className="text-[9px] sm:text-[10px] font-mono text-gray-600 dark:text-gray-300 truncate block bg-gray-100 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700/50">{path}</span>
       </div>
       <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">{desc}</p>
     </div>
@@ -289,7 +289,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase">GET</span>
-                    <code className="text-xs font-mono text-gray-600 dark:text-gray-300 truncate block">/v1/campuses</code>
+                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-600 dark:text-gray-300 truncate block bg-gray-100 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700/50">/v1/campuses</span>
                   </div>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">All campuses</p>
                 </div>
@@ -317,7 +317,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase">GET</span>
-                    <code className="text-xs font-mono text-gray-600 dark:text-gray-300 truncate block">/v1/graph</code>
+                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-600 dark:text-gray-300 truncate block bg-gray-100 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700/50">/v1/graph</span>
                   </div>
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">Project dependency graph</p>
                 </div>
