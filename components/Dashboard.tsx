@@ -1,0 +1,280 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { fetchData } from '../services/apiService';
+import { Card } from './ui/Card';
+import { ResultModal } from './ResultModal';
+import { SkillsView } from './SkillsView';
+import { UserProfileCard } from './UserProfileCard';
+import { ExperienceHistoryView } from './ExperienceHistoryView';
+import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
+import { DebugView } from './DebugView';
+
+interface DashboardProps {
+  username: string;
+  token: string;
+  onLogout: () => void;
+  darkMode: boolean;
+  toggleDarkMode: () => void;
+}
+
+export const Dashboard: React.FC<DashboardProps> = ({ 
+  username, 
+  token, 
+  onLogout, 
+  darkMode, 
+  toggleDarkMode 
+}) => {
+  const [debugMode, setDebugMode] = useState(() => localStorage.getItem('s21_debug_enabled') === 'true');
+  
+  const [skillsData, setSkillsData] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('s21_skills_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [skillsLoading, setSkillsLoading] = useState(false);
+  const [skillsError, setSkillsError] = useState<string | null>(null);
+
+  const [userData, setUserData] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('s21_profile_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [pointsData, setPointsData] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('s21_points_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [userLoading, setUserLoading] = useState(false);
+  const [userError, setUserError] = useState<string | null>(null);
+
+  const [xpHistoryData, setXpHistoryData] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('s21_history_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [xpHistoryLoading, setXpHistoryLoading] = useState(false);
+  const [xpHistoryError, setXpHistoryError] = useState<string | null>(null);
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalData, setModalData] = useState<any>(null);
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [modalTitle, setModalTitle] = useState('');
+  const [loadingEndpoint, setLoadingEndpoint] = useState<string | null>(null);
+
+  const hasFetched = useRef(false);
+
+  useEffect(() => {
+    if (debugMode) return;
+    if (hasFetched.current) return;
+    hasFetched.current = true;
+
+    const loadData = async () => {
+      if (!skillsData) setSkillsLoading(true);
+      if (!userData) setUserLoading(true);
+      if (!xpHistoryData) setXpHistoryLoading(true);
+
+      try {
+        const sData = await fetchData(`/v1/participants/${username}/skills`, token);
+        setSkillsData(sData);
+        localStorage.setItem('s21_skills_cache', JSON.stringify(sData));
+        localStorage.setItem('s21_skills_cache_timestamp', new Date().toISOString());
+      } catch (err: any) { setSkillsError(err.message); } finally { setSkillsLoading(false); }
+
+      try {
+        const xpData = await fetchData(`/v1/participants/${username}/experience-history`, token);
+        setXpHistoryData(xpData);
+        localStorage.setItem('s21_history_cache', JSON.stringify(xpData));
+        localStorage.setItem('s21_history_cache_timestamp', new Date().toISOString());
+      } catch (err: any) { setXpHistoryError(err.message); } finally { setXpHistoryLoading(false); }
+
+      try {
+         const uData = await fetchData(`/v1/participants/${username}`, token);
+         try {
+           const pData = await fetchData(`/v1/participants/${username}/points`, token);
+           setPointsData(pData);
+           localStorage.setItem('s21_points_cache', JSON.stringify(pData));
+           localStorage.setItem('s21_points_cache_timestamp', new Date().toISOString());
+         } catch (e) {}
+
+         try {
+           const cData = await fetchData(`/v1/participants/${username}/coalition`, token);
+           if (Array.isArray(cData) && cData.length > 0) uData.coalition = cData[0];
+           else if (cData && !Array.isArray(cData)) uData.coalition = cData;
+         } catch (e) {}
+
+         setUserData(uData);
+         setUserError(null);
+         localStorage.setItem('s21_profile_cache', JSON.stringify(uData));
+         localStorage.setItem('s21_profile_cache_timestamp', new Date().toISOString());
+
+      } catch (err: any) { setUserError(err.message); } finally { setUserLoading(false); }
+    };
+
+    loadData();
+  }, [username, token, debugMode]);
+
+  const toggleDebugMode = () => {
+    const nextValue = !debugMode;
+    setDebugMode(nextValue);
+    localStorage.setItem('s21_debug_enabled', String(nextValue));
+  };
+
+  const handleApiCall = async (endpoint: string, title: string) => {
+    if (loadingEndpoint) return; 
+    
+    setLoadingEndpoint(endpoint);
+    const requestInfo = {
+      method: 'GET',
+      url: `/api-proxy${endpoint}`,
+      headers: { 'Authorization': `Bearer ${token.substring(0, 10)}...[HIDDEN]`, 'Content-Type': 'application/json' }
+    };
+
+    try {
+      const data = await fetchData(endpoint, token);
+      setModalData({ request: requestInfo, response: data });
+      setModalError(null);
+    } catch (err: any) {
+      setModalData({ request: requestInfo, response: null });
+      setModalError(err.message);
+    } finally {
+      setModalTitle(title);
+      setModalOpen(true);
+      setLoadingEndpoint(null);
+    }
+  };
+
+  const handleCacheApiCall = async (endpoint: string, cacheKey: string, title: string) => {
+    if (loadingEndpoint) return;
+    
+    setLoadingEndpoint(endpoint);
+    try {
+      const data = await fetchData(endpoint, token);
+      localStorage.setItem(cacheKey, JSON.stringify(data));
+      localStorage.setItem(`${cacheKey}_timestamp`, new Date().toISOString());
+
+      const requestInfo = {
+        method: 'GET',
+        url: `/api-proxy${endpoint}`,
+        headers: { 'Authorization': `Bearer ${token.substring(0, 10)}...[HIDDEN]`, 'Content-Type': 'application/json' }
+      };
+      setModalData({ request: requestInfo, response: data });
+      setModalError(null);
+      setModalTitle(`${title} (Cached Successfully)`);
+      setModalOpen(true);
+    } catch (err: any) {
+      setModalError(err.message);
+      setModalOpen(true);
+    } finally {
+      setLoadingEndpoint(null);
+    }
+  };
+
+  const handleOpenCached = (cacheKey: string, title: string) => {
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) {
+      alert('Cached data not found. Please click "Try" first to fetch and save it.');
+      return;
+    }
+    
+    setModalData({ 
+      request: { source: "Simulated Server Disk Cache (localStorage)" }, 
+      response: JSON.parse(cached) 
+    });
+    setModalTitle(`Cached ${title}`);
+    setModalError(null);
+    setModalOpen(true);
+  };
+
+  const headerTitle = userData?.className || 'Portal';
+  const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (xpHistoryLoading && !xpHistoryData);
+
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 pb-10 transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100">
+      <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40 border-b dark:border-gray-800 transition-colors">
+        {isAnyLoading && (
+          <div className="absolute top-0 left-0 w-full h-1 overflow-hidden">
+            <div className="h-full bg-primary animate-[loading_1.5s_infinite] origin-left scale-x-0 w-[40%]"></div>
+          </div>
+        )}
+        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20">
+              {username.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex flex-col">
+              <h1 className="font-semibold text-gray-900 dark:text-white tracking-tight leading-none text-lg">
+                {username}
+              </h1>
+              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-0.5">
+                {headerTitle}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+             <button onClick={toggleDarkMode} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+               {darkMode ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>}
+             </button>
+             <button onClick={toggleDebugMode} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${debugMode ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
+              {debugMode ? 'EXIT DEBUG' : 'DEBUG'}
+            </button>
+            <button onClick={onLogout} className="text-gray-400 hover:text-red-500 transition-colors p-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {!debugMode ? (
+          <div className="flex flex-col items-stretch lg:grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-14 lg:items-start animate-in fade-in duration-500">
+            {/* 1. Profile Block */}
+            <div className="order-1 w-full lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24 z-10">
+              <UserProfileCard data={userData} points={pointsData} loading={userLoading && !userData} error={userError} />
+            </div>
+
+            {/* 2. Skills Block */}
+            <div className="order-2 w-full lg:col-start-2 lg:row-start-2 lg:sticky lg:top-[280px]">
+              <SkillsView data={skillsData} isLoading={skillsLoading && !skillsData} error={skillsError} />
+            </div>
+
+            {/* 3. Central Column: Project Search */}
+            <div className="order-3 w-full lg:col-start-1 lg:row-start-1 lg:row-span-3 space-y-10">
+              <ProjectParticipantsSearch 
+                token={token} 
+                campusId={userData?.campusId || userData?.campus?.id} 
+              />
+            </div>
+
+            {/* 4. Experience History */}
+            <div className="order-4 w-full lg:col-start-2 lg:row-start-3 lg:sticky lg:top-[480px]">
+              <ExperienceHistoryView data={xpHistoryData} isLoading={xpHistoryLoading && !xpHistoryData} error={xpHistoryError} />
+            </div>
+          </div>
+        ) : (
+          <DebugView 
+            token={token}
+            initialUsername={username}
+            campusId={userData?.campusId || userData?.campus?.id}
+            loadingEndpoint={loadingEndpoint}
+            isAnyLoading={isAnyLoading}
+            onApiCall={handleApiCall}
+            onCacheApiCall={handleCacheApiCall}
+            onOpenCached={handleOpenCached}
+          />
+        )}
+      </main>
+
+      <ResultModal isOpen={modalOpen} onClose={() => setModalOpen(false)} data={modalData} error={modalError} title={modalTitle} />
+      
+      <style>{`
+        @keyframes loading {
+          0% { transform: translateX(-100%) scaleX(0); }
+          50% { transform: translateX(0) scaleX(1); }
+          100% { transform: translateX(100%) scaleX(0); }
+        }
+      `}</style>
+    </div>
+  );
+}

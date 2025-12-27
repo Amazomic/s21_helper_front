@@ -1,0 +1,287 @@
+
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { Card } from './ui/Card';
+import { fetchData } from '../services/apiService';
+
+interface ProjectParticipantsSearchProps {
+  token: string;
+  campusId?: string;
+}
+
+interface NormalizedProject {
+  id: number;
+  name: string;
+  code: string;
+}
+
+interface Campus {
+  id: string;
+  shortName: string;
+  fullName: string;
+}
+
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId }) => {
+  const [query, setQuery] = useState('');
+  const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedCampusId, setSelectedCampusId] = useState<string>(initialCampusId || '');
+  const [results, setResults] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [cacheVersion, setCacheVersion] = useState(0); 
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const statuses = ['ASSIGNED', 'REGISTERED', 'IN_PROGRESS', 'IN_REVIEWS', 'ACCEPTED', 'FAILED'];
+
+  useEffect(() => {
+    const check = () => setCacheVersion(v => v + 1);
+    window.addEventListener('focus', check);
+    const interval = setInterval(check, 3000);
+    return () => {
+      window.removeEventListener('focus', check);
+      clearInterval(interval);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const getProjectsFromCache = (): NormalizedProject[] => {
+    try {
+      const cached = localStorage.getItem('s21_graph_cache');
+      if (!cached) return [];
+      const parsed = JSON.parse(cached);
+      const allProjects: NormalizedProject[] = [];
+      const graphData = parsed.response || parsed;
+      const nodes = graphData.nodes || [];
+
+      nodes.forEach((node: any) => {
+        if (Array.isArray(node.items)) {
+          node.items.forEach((item: any) => {
+            if (item.entityId && item.code && item.entityType === 'PROJECT') {
+              allProjects.push({
+                id: Number(item.entityId),
+                name: node.label || item.code,
+                code: String(item.code)
+              });
+            }
+          });
+        }
+      });
+      return allProjects;
+    } catch (e) { return []; }
+  };
+
+  const getCampusesFromCache = (): Campus[] => {
+    try {
+      const cached = localStorage.getItem('s21_campuses_cache');
+      if (!cached) return [];
+      const parsed = JSON.parse(cached);
+      const data = parsed.response || parsed;
+      return Array.isArray(data.campuses) ? data.campuses : [];
+    } catch (e) { return []; }
+  };
+
+  const projects = useMemo(() => getProjectsFromCache(), [cacheVersion]);
+  const campuses = useMemo(() => getCampusesFromCache(), [cacheVersion]);
+
+  const cacheStatus = useMemo(() => {
+    const hasProjects = projects.length > 0;
+    const hasCampuses = campuses.length > 0;
+    if (hasProjects && hasCampuses) return 'READY';
+    if (hasProjects || hasCampuses) return 'PARTIAL';
+    return 'MISSING';
+  }, [projects, campuses]);
+
+  const suggestions = useMemo(() => {
+    const term = query.toLowerCase().trim();
+    if (term.length < 2) return [];
+    const selected = projects.find(p => p.id === selectedProjectId);
+    if (selected && query === selected.code) return [];
+
+    return projects
+      .filter((p) => 
+        p.code.toLowerCase().includes(term) || 
+        p.name.toLowerCase().includes(term)
+      )
+      .slice(0, 10);
+  }, [query, projects, selectedProjectId]);
+
+  const fetchParticipants = useCallback(async (projectId: number, status: string, cId: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      let url = `/v1/projects/${projectId}/participants?limit=100&offset=0`;
+      if (status) url += `&status=${status}`;
+      if (cId) url += `&campusId=${cId}`;
+
+      const data = await fetchData(url, token);
+      const list = data?.participants || [];
+      setResults(Array.isArray(list) ? list : []);
+    } catch (err: any) {
+      setError(err.message);
+      setResults([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [token]);
+
+  useEffect(() => {
+    if (selectedProjectId) {
+      fetchParticipants(selectedProjectId, selectedStatus, selectedCampusId);
+    }
+  }, [selectedProjectId, selectedStatus, selectedCampusId, fetchParticipants]);
+
+  const handleSelectProject = (p: NormalizedProject) => {
+    setQuery(p.code);
+    setSelectedProjectId(p.id);
+    setShowSuggestions(false);
+  };
+
+  return (
+    <div ref={containerRef} className="w-full">
+      <Card className="shadow-2xl border-none rounded-[1.5rem] lg:rounded-[2.5rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl mt-4 overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all">
+        <div className="flex flex-col gap-2 lg:gap-6">
+          {/* Header */}
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="flex flex-col min-w-0">
+              <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
+              <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
+            </div>
+            
+            <div className="flex-shrink-0">
+              {cacheStatus === 'READY' ? (
+                <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                  <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                  <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">READY</span>
+                </div>
+              ) : (
+                <div className="px-1.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-1 shadow-sm">
+                  <div className={`w-1 h-1 rounded-full ${cacheStatus === 'PARTIAL' ? 'bg-amber-50' : 'bg-red-500'}`}></div>
+                  <span className="text-[7px] font-black uppercase tracking-tighter">{cacheStatus}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Unified Filters Grid */}
+          <div className="space-y-2 lg:space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1.5 lg:gap-3">
+              {/* Campus Filter */}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-2.5 lg:left-4 flex items-center pointer-events-none z-10">
+                  <svg className="w-3 h-3 lg:w-4 lg:h-4 text-primary opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  </svg>
+                </div>
+                <select 
+                  value={selectedCampusId} 
+                  onChange={(e) => setSelectedCampusId(e.target.value)}
+                  className={`w-full pl-8 lg:pl-10 pr-6 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white appearance-none cursor-pointer shadow-inner ${campuses.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                  disabled={campuses.length === 0}
+                >
+                  <option value="">{campuses.length === 0 ? 'No Campuses' : 'Campus'}</option>
+                  {campuses.map(c => (
+                    <option key={c.id} value={c.id}>{c.shortName}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Project Search */}
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-2.5 lg:left-4 flex items-center pointer-events-none z-10">
+                  <svg className="w-3 h-3 lg:w-4 lg:h-4 text-primary opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </div>
+                <input
+                  type="text"
+                  value={query}
+                  onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
+                  onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+                  placeholder="Project code..."
+                  disabled={projects.length === 0}
+                  className={`w-full pl-8 lg:pl-10 pr-3 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner ${projects.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                />
+                
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl lg:rounded-2xl shadow-xl max-h-48 lg:max-h-72 overflow-hidden animate-in fade-in duration-200">
+                    <div className="p-1 lg:p-2 overflow-y-auto max-h-48 lg:max-h-72 custom-scrollbar">
+                      {suggestions.map((p) => (
+                        <button
+                          key={`${p.id}-${p.code}`}
+                          onClick={() => handleSelectProject(p)}
+                          className="w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 hover:bg-primary/10 rounded-lg lg:rounded-xl transition-all flex justify-between items-center mb-0.5"
+                        >
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-gray-200 truncate">{p.code}</span>
+                            <span className="text-[6px] lg:text-[8px] text-gray-400 font-bold uppercase truncate">{p.name}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Status Pills */}
+            <div className="flex flex-wrap gap-1 lg:gap-2 px-0.5">
+              {statuses.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSelectedStatus(selectedStatus === s ? '' : s)}
+                  className={`px-1.5 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl text-[7px] lg:text-[9px] font-black transition-all border uppercase tracking-tighter ${
+                    selectedStatus === s 
+                      ? 'bg-primary text-white border-primary shadow-sm' 
+                      : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:border-primary/30'
+                  }`}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Results Area */}
+          <div className="min-h-[30px] lg:min-h-[100px] px-0.5">
+            {isLoading && (
+              <div className="flex flex-col items-center py-2 lg:py-8">
+                <div className="w-4 h-4 lg:w-8 lg:h-8 border-2 lg:border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-1 lg:mb-3"></div>
+                <span className="text-[6px] lg:text-[10px] font-black text-gray-400 uppercase tracking-widest">Searching...</span>
+              </div>
+            )}
+
+            {!isLoading && results.length > 0 && (
+              <div className="space-y-1 lg:space-y-3 animate-in fade-in">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 lg:gap-3 max-h-[200px] lg:max-h-[500px] overflow-y-auto pr-0.5 custom-scrollbar">
+                  {results.map((login, idx) => (
+                    <div key={`${idx}-${login}`} className="flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 transition-all group shadow-sm">
+                      <div className="flex items-center gap-1.5 lg:gap-3">
+                        <div className="w-5 h-5 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl bg-primary/10 flex items-center justify-center text-[7px] lg:text-xs font-black text-primary border border-primary/10">
+                          {login.substring(0, 2).toUpperCase()}
+                        </div>
+                        <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight">{login}</span>
+                      </div>
+                      <div className="text-[7px] lg:text-[10px] font-black px-1.5 lg:px-3 py-0.5 lg:py-1 rounded-lg lg:rounded-xl uppercase bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-colors cursor-pointer">
+                        VIEW
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+};

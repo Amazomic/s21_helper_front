@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>School 21 Portal</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='25' fill='%23248b65'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-family='ui-sans-serif, system-ui, sans-serif' font-size='55' fill='white' font-weight='900'>21</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              primary: '#248b65',
+              'primary-dark': '#1c6d4f',
+              bg: '#f3f4f6',
+              surface: '#ffffff',
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      :root {
+        /* Mobile defaults - compact */
+        --block-padding: 8px;
+        --block-gap: 8px;
+      }
+
+      @media (min-width: 1024px) {
+        :root {
+          /* Desktop/Web defaults - spacious */
+          --block-padding: 24px;
+          --block-gap: 20px;
+        }
+      }
+
+      /* Custom scrollbar for JSON viewer */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+      }
+
+      /* Hide number input spinners (arrows) */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield; 
+      }
+
+      .global-block-padding {
+        padding: var(--block-padding);
+      }
+
+      /* Global code block styles */
+      code {
+        background-color: #f3f4f6 !important;
+        color: #1f2937 !important;
+        padding: 2px 6px !important;
+        border-radius: 4px !important;
+        font-family: 'Menlo', 'Monaco', 'Courier New', monospace !important;
+        font-size: 0.9em !important;
+        display: inline-block;
+        line-height: 1.4;
+      }
+
+      pre {
+        background-color: #1f2937 !important;
+        color: #f3f4f6 !important;
+        padding: 16px !important;
+        border-radius: 8px !important;
+        overflow-x: auto !important;
+        font-family: 'Menlo', 'Monaco', 'Courier New', monospace !important;
+        line-height: 1.5 !important;
+        border: 1px solid #374151 !important;
+      }
+
+      pre code {
+        background-color: transparent !important;
+        color: inherit !important;
+        padding: 0 !important;
+        border-radius: 0 !important;
+        font-size: inherit !important;
+      }
+
+      /* Dark mode adjustments */
+      .dark code {
+        background-color: #374151 !important;
+        color: #e5e7eb !important;
+      }
+
+      .dark pre {
+        background-color: #111827 !important;
+        color: #e5e7eb !important;
+        border-color: #1f2937 !important;
+      }
+
+      /* Additional styling for code in various contexts */
+      div code, span code, p code {
+        background-color: #f3f4f6 !important;
+        color: #1f2937 !important;
+      }
+
+      .dark div code, .dark span code, .dark p code {
+        background-color: #374151 !important;
+        color: #e5e7eb !important;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-100 text-gray-900 antialiased selection:bg-green-200">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
