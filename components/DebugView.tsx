@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
 
@@ -175,14 +175,34 @@ export const DebugView: React.FC<DebugViewProps> = ({
     return encodeURIComponent(trimmed);
   };
 
-  const projSuggestions = cachedProjects.filter(p => {
-    if (!projId) return false;
-    const term = projId.toLowerCase();
-    if (p.id === projId) return false;
-    return p.code.toLowerCase().includes(term) || 
-           p.name.toLowerCase().includes(term) ||
-           p.id.includes(term);
-  }).slice(0, 10);
+  const projSuggestions = useMemo(() => {
+    if (!projId) return [];
+    const term = projId.toLowerCase().trim();
+    if (!term) return [];
+    
+    return cachedProjects
+      .filter(p => {
+        if (p.id === projId) return false;
+        return p.code.toLowerCase().includes(term) || 
+               p.name.toLowerCase().includes(term) ||
+               p.id.includes(term);
+      })
+      .sort((a, b) => {
+        // Prioritize startsWith matches
+        const aCodeStart = a.code.toLowerCase().startsWith(term);
+        const bCodeStart = b.code.toLowerCase().startsWith(term);
+        if (aCodeStart && !bCodeStart) return -1;
+        if (!aCodeStart && bCodeStart) return 1;
+        
+        const aNameStart = a.name.toLowerCase().startsWith(term);
+        const bNameStart = b.name.toLowerCase().startsWith(term);
+        if (aNameStart && !bNameStart) return -1;
+        if (!aNameStart && bNameStart) return 1;
+
+        return 0;
+      })
+      .slice(0, 10);
+  }, [projId, cachedProjects]);
 
   return (
     <div className="space-y-8 animate-in fade-in max-w-5xl mx-auto pb-24 transition-all duration-300">
@@ -294,9 +314,9 @@ export const DebugView: React.FC<DebugViewProps> = ({
                                     setShowProjSuggestions(false);
                                 }}
                             >
-                                <div className="flex flex-col">
-                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{p.code}</span>
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{p.name}</span>
+                                <div className="flex flex-col max-w-[70%]">
+                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
                                 </div>
                                 <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
                             </div>
