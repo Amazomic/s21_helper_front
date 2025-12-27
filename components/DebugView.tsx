@@ -20,6 +20,12 @@ interface CachedCampus {
   fullName: string;
 }
 
+interface CachedProject {
+  id: string;
+  name: string;
+  code: string;
+}
+
 const DebugRow = ({ method, path, desc, onClick, isLoading, isAnyLoading }: any) => (
   <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && !isLoading ? 'opacity-50' : ''}`}>
     <div className="min-w-0 flex-1">
@@ -118,6 +124,8 @@ export const DebugView: React.FC<DebugViewProps> = ({
 
   const [genericId, setGenericId] = useState('');
   const [cachedCampuses, setCachedCampuses] = useState<CachedCampus[]>([]);
+  const [cachedProjects, setCachedProjects] = useState<CachedProject[]>([]);
+  const [showProjSuggestions, setShowProjSuggestions] = useState(false);
 
   useEffect(() => {
     try {
@@ -132,6 +140,33 @@ export const DebugView: React.FC<DebugViewProps> = ({
     } catch (e) {
       console.error("Failed to load cached campuses for debug view", e);
     }
+
+    try {
+      const cachedGraph = localStorage.getItem('s21_graph_cache');
+      if (cachedGraph) {
+        const parsed = JSON.parse(cachedGraph);
+        const graphData = parsed.response || parsed;
+        const nodes = graphData.nodes || [];
+        const projs: CachedProject[] = [];
+        
+        nodes.forEach((node: any) => {
+          if (Array.isArray(node.items)) {
+            node.items.forEach((item: any) => {
+              if (item.entityId && item.code && item.entityType === 'PROJECT') {
+                projs.push({
+                  id: String(item.entityId),
+                  name: node.label || item.code,
+                  code: String(item.code)
+                });
+              }
+            });
+          }
+        });
+        setCachedProjects(projs);
+      }
+    } catch (e) {
+      console.error("Failed to load cached projects for debug view", e);
+    }
   }, []);
 
   const getEncoded = (val: string, label: string) => {
@@ -139,6 +174,15 @@ export const DebugView: React.FC<DebugViewProps> = ({
     if (!trimmed) { alert(`Please enter ${label}`); return null; }
     return encodeURIComponent(trimmed);
   };
+
+  const projSuggestions = cachedProjects.filter(p => {
+    if (!projId) return false;
+    const term = projId.toLowerCase();
+    if (p.id === projId) return false;
+    return p.code.toLowerCase().includes(term) || 
+           p.name.toLowerCase().includes(term) ||
+           p.id.includes(term);
+  }).slice(0, 10);
 
   return (
     <div className="space-y-8 animate-in fade-in max-w-5xl mx-auto pb-24 transition-all duration-300">
@@ -223,12 +267,42 @@ export const DebugView: React.FC<DebugViewProps> = ({
         <div className="space-y-6">
           <DebugSection title="Projects" desc="Core school projects & participants">
             <div className="grid grid-cols-1 gap-4 mb-6 p-4 bg-indigo-50 dark:bg-indigo-900/10 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
-              <div className="space-y-1">
+              <div className="space-y-1 relative group">
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">projectId <span className="text-red-500 font-bold">*</span></label>
-                  <span className="text-[9px] text-gray-400 font-mono italic">(int64, path)</span>
+                  <span className="text-[9px] text-gray-400 font-mono italic">(int64) or Search</span>
                 </div>
-                <input type="text" value={projId} onChange={(e) => setProjId(e.target.value)} placeholder="e.g. 134411" className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" />
+                <input 
+                  type="text" 
+                  value={projId} 
+                  onChange={(e) => { setProjId(e.target.value); setShowProjSuggestions(true); }}
+                  onFocus={() => setShowProjSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowProjSuggestions(false), 200)}
+                  placeholder="e.g. 134411 or 'CPP'" 
+                  className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
+                  autoComplete="off"
+                />
+                {showProjSuggestions && projId && projSuggestions.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                        {projSuggestions.map(p => (
+                            <div 
+                                key={p.id} 
+                                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                                onMouseDown={(e) => {
+                                    e.preventDefault(); 
+                                    setProjId(p.id);
+                                    setShowProjSuggestions(false);
+                                }}
+                            >
+                                <div className="flex flex-col">
+                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{p.code}</span>
+                                    <span className="text-[10px] text-gray-500 dark:text-gray-400">{p.name}</span>
+                                </div>
+                                <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
+                            </div>
+                        ))}
+                    </div>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
