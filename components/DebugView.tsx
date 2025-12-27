@@ -179,11 +179,10 @@ export const DebugView: React.FC<DebugViewProps> = ({
     const term = projId.toLowerCase().trim();
     if (!term || term.length < 2) return [];
     
-    // Analogous to main page: hide suggestions if the input exactly matches a project ID
-    // (In main page, it hides if query == selected.code)
-    const isExactMatch = cachedProjects.some(p => p.id === term);
-    if (isExactMatch) return [];
-
+    // Logic aligned with main page but adapted for single input:
+    // We filter matches by code, name, OR ID (as requested).
+    // We do NOT hide on exact match automatically here, allowing partials 
+    // like "14" to still show "DO14_Final" even if project #14 exists.
     return cachedProjects
       .filter(p => {
         return p.code.toLowerCase().includes(term) || 
