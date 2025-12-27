@@ -176,30 +176,19 @@ export const DebugView: React.FC<DebugViewProps> = ({
   };
 
   const projSuggestions = useMemo(() => {
-    if (!projId) return [];
     const term = projId.toLowerCase().trim();
-    if (!term) return [];
+    if (!term || term.length < 2) return [];
     
+    // Analogous to main page: hide suggestions if the input exactly matches a project ID
+    // (In main page, it hides if query == selected.code)
+    const isExactMatch = cachedProjects.some(p => p.id === term);
+    if (isExactMatch) return [];
+
     return cachedProjects
       .filter(p => {
-        if (p.id === projId) return false;
         return p.code.toLowerCase().includes(term) || 
                p.name.toLowerCase().includes(term) ||
                p.id.includes(term);
-      })
-      .sort((a, b) => {
-        // Prioritize startsWith matches
-        const aCodeStart = a.code.toLowerCase().startsWith(term);
-        const bCodeStart = b.code.toLowerCase().startsWith(term);
-        if (aCodeStart && !bCodeStart) return -1;
-        if (!aCodeStart && bCodeStart) return 1;
-        
-        const aNameStart = a.name.toLowerCase().startsWith(term);
-        const bNameStart = b.name.toLowerCase().startsWith(term);
-        if (aNameStart && !bNameStart) return -1;
-        if (!aNameStart && bNameStart) return 1;
-
-        return 0;
       })
       .slice(0, 10);
   }, [projId, cachedProjects]);
