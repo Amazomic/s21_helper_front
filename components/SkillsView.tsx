@@ -67,10 +67,10 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
   }
 
   return (
-    <Card className="flex flex-col shadow-2xl border-none overflow-hidden rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300">
+    <div className="flex flex-col shadow-2xl border-none overflow-hidden rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-5 lg:p-6 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
+        className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
       >
          <div className="flex items-baseline gap-2.5">
             <h3 className="font-black text-gray-800 dark:text-white text-[10px] lg:text-xs uppercase tracking-[0.2em] group-hover:text-primary transition-colors duration-300">
@@ -89,7 +89,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
       </button>
       
       <div className={`transition-all duration-500 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
-        <div className="px-5 lg:px-6 pb-5 lg:pb-6">
+        <div className="px-3 lg:px-4 pb-3 lg:pb-4">
             {/* Chart Bars */}
             <div className="relative w-full h-28 lg:h-36 mt-1">
               <div className="absolute inset-0 flex items-end justify-between gap-[0.5px] lg:gap-[2px] px-0.5 pb-0.5">
@@ -139,6 +139,6 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
             </div>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
