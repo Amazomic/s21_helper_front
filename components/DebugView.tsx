@@ -177,18 +177,18 @@ export const DebugView: React.FC<DebugViewProps> = ({
 
   const projSuggestions = useMemo(() => {
     const term = projId.toLowerCase().trim();
-    if (!term || term.length < 2) return [];
+    if (term.length < 2) return [];
     
-    // Logic aligned with main page but adapted for single input:
-    // We filter matches by code, name, OR ID (as requested).
-    // We do NOT hide on exact match automatically here, allowing partials 
-    // like "14" to still show "DO14_Final" even if project #14 exists.
+    // Exactly like ProjectParticipantsSearch.tsx:
+    // We check if the input is already the selected project's code to hide suggestions
+    const alreadySelected = cachedProjects.find(p => p.id === projId);
+    if (alreadySelected && projId === alreadySelected.code) return [];
+
     return cachedProjects
-      .filter(p => {
-        return p.code.toLowerCase().includes(term) || 
-               p.name.toLowerCase().includes(term) ||
-               p.id.includes(term);
-      })
+      .filter((p) => 
+        p.code.toLowerCase().includes(term) || 
+        p.name.toLowerCase().includes(term)
+      )
       .slice(0, 10);
   }, [projId, cachedProjects]);
 
@@ -284,7 +284,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   type="text" 
                   value={projId} 
                   onChange={(e) => { setProjId(e.target.value); setShowProjSuggestions(true); }}
-                  onFocus={() => setShowProjSuggestions(true)}
+                  onFocus={() => { setShowProjSuggestions(true); }}
                   onBlur={() => setTimeout(() => setShowProjSuggestions(false), 200)}
                   placeholder="e.g. 134411 or 'CPP'" 
                   className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
@@ -294,7 +294,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
                     <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
                         {projSuggestions.map(p => (
                             <div 
-                                key={p.id} 
+                                key={`${p.id}-${p.code}`} 
                                 className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
                                 onMouseDown={(e) => {
                                     e.preventDefault(); 
