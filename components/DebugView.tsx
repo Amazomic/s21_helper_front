@@ -65,17 +65,17 @@ const CacheStatusRow = ({ label, cacheKey }: { label: string, cacheKey: string }
   const exists = !!data;
   
   return (
-    <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900/40 border dark:border-gray-700 rounded-lg shadow-sm">
-      <div className="flex flex-col">
-        <span className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tight">{label}</span>
-        <span className="text-[10px] text-gray-400 font-mono">
-          {timestamp ? new Date(timestamp).toLocaleString() : 'Never updated'}
-        </span>
+    <div className="flex flex-col justify-between p-2 bg-white dark:bg-gray-900/40 border dark:border-gray-700 rounded-lg shadow-sm h-full gap-2">
+      <div className="flex items-center justify-between">
+        <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 uppercase tracking-tight truncate mr-2" title={label}>{label}</span>
+        <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${exists ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
       </div>
-      <div className="flex items-center gap-2">
-        <div className={`w-2 h-2 rounded-full ${exists ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
-        <span className={`text-[10px] font-black uppercase tracking-wider ${exists ? 'text-emerald-500' : 'text-red-500'}`}>
-          {exists ? 'READY' : 'EMPTY'}
+      <div className="flex items-end justify-between gap-1">
+         <span className="text-[9px] text-gray-400 font-mono truncate" title={timestamp ? new Date(timestamp).toLocaleString() : 'Never'}>
+          {timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}
+        </span>
+        <span className={`text-[8px] font-black uppercase tracking-wider ${exists ? 'text-emerald-500' : 'text-red-500'}`}>
+          {exists ? 'OK' : 'NO'}
         </span>
       </div>
     </div>
@@ -125,7 +125,9 @@ export const DebugView: React.FC<DebugViewProps> = ({
   const [genericId, setGenericId] = useState('');
   const [cachedCampuses, setCachedCampuses] = useState<CachedCampus[]>([]);
   const [cachedProjects, setCachedProjects] = useState<CachedProject[]>([]);
+  
   const [showProjSuggestions, setShowProjSuggestions] = useState(false);
+  const [showPartProjSuggestions, setShowPartProjSuggestions] = useState(false);
 
   useEffect(() => {
     try {
@@ -175,14 +177,13 @@ export const DebugView: React.FC<DebugViewProps> = ({
     return encodeURIComponent(trimmed);
   };
 
-  const projSuggestions = useMemo(() => {
-    const term = projId.toLowerCase().trim();
+  const getSuggestions = (input: string) => {
+    const term = input.toLowerCase().trim();
     if (term.length < 2) return [];
     
-    // Exactly like ProjectParticipantsSearch.tsx:
-    // We check if the input is already the selected project's code to hide suggestions
-    const alreadySelected = cachedProjects.find(p => p.id === projId);
-    if (alreadySelected && projId === alreadySelected.code) return [];
+    // Hide suggestions if exact match ID found to prevent persistent dropdown after selection
+    const alreadySelected = cachedProjects.find(p => p.id === input);
+    if (alreadySelected && input === alreadySelected.code) return [];
 
     return cachedProjects
       .filter((p) => 
@@ -190,10 +191,83 @@ export const DebugView: React.FC<DebugViewProps> = ({
         p.name.toLowerCase().includes(term)
       )
       .slice(0, 10);
-  }, [projId, cachedProjects]);
+  };
+
+  const projSuggestions = useMemo(() => getSuggestions(projId), [projId, cachedProjects]);
+  const partProjSuggestions = useMemo(() => getSuggestions(partProjectId), [partProjectId, cachedProjects]);
+
+  const getProjectName = (id: string) => {
+      const p = cachedProjects.find(cp => cp.id === id);
+      return p ? p.code : null;
+  };
+
+  const ProjectInput = ({ 
+    value, 
+    setValue, 
+    showSuggestions, 
+    setShowSuggestions, 
+    suggestions 
+  }: { 
+    value: string, 
+    setValue: (v: string) => void, 
+    showSuggestions: boolean, 
+    setShowSuggestions: (v: boolean) => void, 
+    suggestions: CachedProject[] 
+  }) => (
+    <div className="relative group w-full">
+      <input 
+        type="text" 
+        value={value} 
+        onChange={(e) => { setValue(e.target.value); setShowSuggestions(true); }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        placeholder="e.g. 134411 or 'CPP'" 
+        className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
+        autoComplete="off"
+      />
+      {getProjectName(value) && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 pointer-events-none">
+           {getProjectName(value)}
+        </div>
+      )}
+      {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+              {suggestions.map(p => (
+                  <div 
+                      key={`${p.id}-${p.code}`} 
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                      onMouseDown={(e) => {
+                          e.preventDefault(); 
+                          setValue(p.id);
+                          setShowSuggestions(false);
+                      }}
+                  >
+                      <div className="flex flex-col max-w-[70%]">
+                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                      </div>
+                      <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
+                  </div>
+              ))}
+          </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="space-y-8 animate-in fade-in max-w-5xl mx-auto pb-24 transition-all duration-300">
+    <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto pb-24 transition-all duration-300">
+      <DebugSection title="Check Save Data" desc="Browser local cache persistence status">
+         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <CacheStatusRow label="Auth Session" cacheKey="s21_auth_token" />
+            <CacheStatusRow label="Profile Data" cacheKey="s21_profile_cache" />
+            <CacheStatusRow label="Points Data" cacheKey="s21_points_cache" />
+            <CacheStatusRow label="Skills Data" cacheKey="s21_skills_cache" />
+            <CacheStatusRow label="XP History" cacheKey="s21_history_cache" />
+            <CacheStatusRow label="Graph Data" cacheKey="s21_graph_cache" />
+            <CacheStatusRow label="Campuses" cacheKey="s21_campuses_cache" />
+         </div>
+      </DebugSection>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <DebugSection title="Participant" desc="Operations related to participants">
@@ -241,7 +315,13 @@ export const DebugView: React.FC<DebugViewProps> = ({
               </div>
               <div className="space-y-1">
                 <label className="text-[10px] font-black uppercase text-blue-700 dark:text-blue-400 tracking-wider">projectId / courseId</label>
-                <input type="text" value={partProjectId} onChange={(e) => setPartProjectId(e.target.value)} placeholder="e.g. 12311" className="w-full px-4 py-2.5 rounded-lg border border-blue-200 dark:border-blue-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-blue-500 outline-none font-mono text-xs" />
+                <ProjectInput 
+                  value={partProjectId} 
+                  setValue={setPartProjectId} 
+                  showSuggestions={showPartProjSuggestions} 
+                  setShowSuggestions={setShowPartProjSuggestions} 
+                  suggestions={partProjSuggestions} 
+                />
               </div>
             </div>
 
@@ -258,18 +338,6 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <DebugRow method="GET" path="/v1/participants/{login}/coalition" desc="Coalition info" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/coalition`, 'Coalition'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/coalition`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/badges" desc="Badges list" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/badges`, 'Badges'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/badges`} isAnyLoading={isAnyLoading} />
           </DebugSection>
-          
-          <DebugSection title="Check Save Data" desc="Browser local cache persistence status">
-             <div className="grid grid-cols-1 gap-2">
-                <CacheStatusRow label="Auth Session" cacheKey="s21_auth_token" />
-                <CacheStatusRow label="Profile Data" cacheKey="s21_profile_cache" />
-                <CacheStatusRow label="Points Data" cacheKey="s21_points_cache" />
-                <CacheStatusRow label="Skills Data" cacheKey="s21_skills_cache" />
-                <CacheStatusRow label="XP History Data" cacheKey="s21_history_cache" />
-                <CacheStatusRow label="Graph Data" cacheKey="s21_graph_cache" />
-                <CacheStatusRow label="Campuses Data" cacheKey="s21_campuses_cache" />
-             </div>
-          </DebugSection>
         </div>
 
         <div className="space-y-6">
@@ -280,37 +348,13 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   <label className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider">projectId <span className="text-red-500 font-bold">*</span></label>
                   <span className="text-[9px] text-gray-400 font-mono italic">(int64) or Search</span>
                 </div>
-                <input 
-                  type="text" 
+                <ProjectInput 
                   value={projId} 
-                  onChange={(e) => { setProjId(e.target.value); setShowProjSuggestions(true); }}
-                  onFocus={() => { setShowProjSuggestions(true); }}
-                  onBlur={() => setTimeout(() => setShowProjSuggestions(false), 200)}
-                  placeholder="e.g. 134411 or 'CPP'" 
-                  className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
-                  autoComplete="off"
+                  setValue={setProjId} 
+                  showSuggestions={showProjSuggestions} 
+                  setShowSuggestions={setShowProjSuggestions} 
+                  suggestions={projSuggestions} 
                 />
-                {showProjSuggestions && projId && projSuggestions.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                        {projSuggestions.map(p => (
-                            <div 
-                                key={`${p.id}-${p.code}`} 
-                                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
-                                onMouseDown={(e) => {
-                                    e.preventDefault(); 
-                                    setProjId(p.id);
-                                    setShowProjSuggestions(false);
-                                }}
-                            >
-                                <div className="flex flex-col max-w-[70%]">
-                                    <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
-                                    <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
-                                </div>
-                                <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
-                            </div>
-                        ))}
-                    </div>
-                )}
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
