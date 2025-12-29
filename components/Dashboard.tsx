@@ -263,32 +263,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-6 py-12">
         {!debugMode ? (
           <div className="flex flex-col items-stretch lg:grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-14 lg:items-start animate-in fade-in duration-500">
-            {/* 1. Profile Block (Sticky) */}
-            <div className="order-1 w-full lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24 z-10">
-              <UserProfileCard data={userData} points={pointsData} loading={userLoading && !userData} error={userError} />
-            </div>
-
-            {/* 2. Active Projects Block (Sticky, below Profile) */}
-            <div className="order-2 w-full lg:col-start-2 lg:row-start-2 lg:sticky lg:top-[280px]">
-              <ProjectsView data={projectsData} isLoading={projectsLoading && !projectsData} error={projectsError} />
-            </div>
-
-            {/* 3. Skills Block (Sticky, below Projects) */}
-            <div className="order-3 w-full lg:col-start-2 lg:row-start-3 lg:sticky lg:top-[400px]">
-              <SkillsView data={skillsData} isLoading={skillsLoading && !skillsData} error={skillsError} />
-            </div>
-
-            {/* 4. Central Column: Project Search (Main Content) */}
-            <div className="order-4 w-full lg:col-start-1 lg:row-start-1 lg:row-span-4 space-y-10">
+            {/* Main Content (Search) - Left Column */}
+            <div className="order-4 w-full lg:col-start-1 lg:row-start-1 lg:order-none space-y-10">
               <ProjectParticipantsSearch 
                 token={token} 
                 campusId={userData?.campusId || userData?.campus?.id} 
               />
             </div>
 
-            {/* 5. Experience History (Sticky, bottom right) */}
-            <div className="order-5 w-full lg:col-start-2 lg:row-start-4 lg:sticky lg:top-[600px]">
-              <ExperienceHistoryView data={xpHistoryData} isLoading={xpHistoryLoading && !xpHistoryData} error={xpHistoryError} />
+            {/* Sidebar (Profile, Projects, Skills, History) - Right Column */}
+            <div className="contents lg:flex lg:flex-col lg:gap-6 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24 lg:h-fit lg:z-10">
+              <div className="order-1 w-full">
+                <UserProfileCard data={userData} points={pointsData} loading={userLoading && !userData} error={userError} />
+              </div>
+
+              <div className="order-2 w-full">
+                <ProjectsView data={projectsData} isLoading={projectsLoading && !projectsData} error={projectsError} />
+              </div>
+
+              <div className="order-3 w-full">
+                <SkillsView data={skillsData} isLoading={skillsLoading && !skillsData} error={skillsError} />
+              </div>
+
+              <div className="order-5 w-full">
+                <ExperienceHistoryView data={xpHistoryData} isLoading={xpHistoryLoading && !xpHistoryData} error={xpHistoryError} />
+              </div>
             </div>
           </div>
         ) : (
