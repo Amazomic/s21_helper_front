@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
 import { AuthResponse } from './types';
@@ -28,17 +28,36 @@ const App: React.FC = () => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
-  // Listen for token updates from apiService (when auto-refresh happens)
+  const handleLogout = useCallback(() => {
+    setToken(null);
+    setUsername('');
+    
+    // Clear all s21 persistence to prevent cross-user data leaking from local storage
+    Object.keys(localStorage).forEach(key => {
+      if (key.startsWith('s21_')) {
+        localStorage.removeItem(key);
+      }
+    });
+  }, []);
+
+  // Listen for token updates from apiService (when auto-refresh happens) OR session expiration
   useEffect(() => {
     const handleTokenUpdate = (event: CustomEvent<string>) => {
       setToken(event.detail);
     };
 
+    const handleSessionExpired = () => {
+      handleLogout();
+    };
+
     window.addEventListener('s21:token_updated', handleTokenUpdate as EventListener);
+    window.addEventListener('s21:session_expired', handleSessionExpired as EventListener);
+    
     return () => {
       window.removeEventListener('s21:token_updated', handleTokenUpdate as EventListener);
+      window.removeEventListener('s21:session_expired', handleSessionExpired as EventListener);
     };
-  }, []);
+  }, [handleLogout]);
 
   // Telegram Web App initialization
   useEffect(() => {
@@ -69,18 +88,6 @@ const App: React.FC = () => {
     localStorage.setItem('s21_refresh_token', authData.refresh_token);
     localStorage.setItem('s21_username', normalizedUsername);
     localStorage.setItem('s21_auth_token_timestamp', new Date().toISOString());
-  };
-
-  const handleLogout = () => {
-    setToken(null);
-    setUsername('');
-    
-    // Clear all s21 persistence to prevent cross-user data leaking from local storage
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('s21_')) {
-        localStorage.removeItem(key);
-      }
-    });
   };
 
   return (

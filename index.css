@@ -1,0 +1,103 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Mobile defaults - compact */
+  --block-padding: 8px;
+  --block-gap: 8px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    /* Desktop/Web defaults - spacious */
+    --block-padding: 24px;
+    --block-gap: 20px;
+  }
+}
+
+/* Custom scrollbar for JSON viewer */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Hide number input spinners (arrows) */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield; 
+}
+
+.global-block-padding {
+  padding: var(--block-padding);
+}
+
+/* Global code block styles */
+code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.9em;
+  display: inline-block;
+  line-height: 1.4;
+}
+
+pre {
+  background-color: #1f2937;
+  color: #f3f4f6;
+  padding: 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  line-height: 1.5;
+  border: 1px solid #374151;
+}
+
+pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+/* Dark mode adjustments */
+.dark code {
+  background-color: #374151;
+  color: #e5e7eb;
+}
+
+.dark pre {
+  background-color: #111827;
+  color: #e5e7eb;
+  border-color: #1f2937;
+}
+
+/* Additional styling for code in various contexts */
+div code, span code, p code {
+  background-color: #f3f4f6;
+  color: #1f2937;
+}
+
+.dark div code, .dark span code, .dark p code {
+  background-color: #374151;
+  color: #e5e7eb;
+}

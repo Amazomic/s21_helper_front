@@ -82,9 +82,16 @@ export const fetchData = async (endpoint: string, token: string): Promise<any> =
         // Retry the original request with the new token
         response = await makeRequest(newAuthData.access_token);
       } catch (refreshError) {
-        console.error("Session refresh failed:", refreshError);
-        // If refresh fails, we allow the 401 response to proceed so the UI handles it normally (e.g. show error)
+        console.error("Session refresh failed (Token Expired):", refreshError);
+        
+        // CRITICAL FIX: If refresh fails, the session is dead. Force logout.
+        window.dispatchEvent(new CustomEvent('s21:session_expired'));
+        throw new Error('Session expired. Please login again.');
       }
+    } else {
+      // No refresh token available, session is dead
+      window.dispatchEvent(new CustomEvent('s21:session_expired'));
+      throw new Error('Session expired. Please login again.');
     }
   }
 
