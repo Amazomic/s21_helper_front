@@ -82,6 +82,70 @@ const CacheStatusRow = ({ label, cacheKey }: { label: string, cacheKey: string }
   );
 };
 
+interface ProjectInputProps { 
+  value: string; 
+  setValue: (v: string) => void; 
+  showSuggestions: boolean; 
+  setShowSuggestions: (v: boolean) => void; 
+  suggestions: CachedProject[];
+  cachedProjects: CachedProject[];
+}
+
+const ProjectInput = ({ 
+  value, 
+  setValue, 
+  showSuggestions, 
+  setShowSuggestions, 
+  suggestions,
+  cachedProjects
+}: ProjectInputProps) => {
+  const getProjectName = (id: string) => {
+      const p = cachedProjects.find(cp => cp.id === id);
+      return p ? p.code : null;
+  };
+
+  return (
+    <div className="relative group w-full">
+      <input 
+        type="text" 
+        value={value} 
+        onChange={(e) => { setValue(e.target.value); setShowSuggestions(true); }}
+        onFocus={() => setShowSuggestions(true)}
+        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+        placeholder="e.g. 134411 or 'CPP'" 
+        className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
+        autoComplete="off"
+      />
+      {getProjectName(value) && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 pointer-events-none">
+           {getProjectName(value)}
+        </div>
+      )}
+      {showSuggestions && suggestions.length > 0 && (
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+              {suggestions.map(p => (
+                  <div 
+                      key={`${p.id}-${p.code}`} 
+                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                      onMouseDown={(e) => {
+                          e.preventDefault(); 
+                          setValue(p.id);
+                          setShowSuggestions(false);
+                      }}
+                  >
+                      <div className="flex flex-col max-w-[70%]">
+                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                      </div>
+                      <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
+                  </div>
+              ))}
+          </div>
+      )}
+    </div>
+  );
+};
+
 export const DebugView: React.FC<DebugViewProps> = ({ 
   initialUsername, 
   campusId,
@@ -196,64 +260,6 @@ export const DebugView: React.FC<DebugViewProps> = ({
   const projSuggestions = useMemo(() => getSuggestions(projId), [projId, cachedProjects]);
   const partProjSuggestions = useMemo(() => getSuggestions(partProjectId), [partProjectId, cachedProjects]);
 
-  const getProjectName = (id: string) => {
-      const p = cachedProjects.find(cp => cp.id === id);
-      return p ? p.code : null;
-  };
-
-  const ProjectInput = ({ 
-    value, 
-    setValue, 
-    showSuggestions, 
-    setShowSuggestions, 
-    suggestions 
-  }: { 
-    value: string, 
-    setValue: (v: string) => void, 
-    showSuggestions: boolean, 
-    setShowSuggestions: (v: boolean) => void, 
-    suggestions: CachedProject[] 
-  }) => (
-    <div className="relative group w-full">
-      <input 
-        type="text" 
-        value={value} 
-        onChange={(e) => { setValue(e.target.value); setShowSuggestions(true); }}
-        onFocus={() => setShowSuggestions(true)}
-        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-        placeholder="e.g. 134411 or 'CPP'" 
-        className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs" 
-        autoComplete="off"
-      />
-      {getProjectName(value) && (
-        <div className="absolute right-2 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 pointer-events-none">
-           {getProjectName(value)}
-        </div>
-      )}
-      {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-              {suggestions.map(p => (
-                  <div 
-                      key={`${p.id}-${p.code}`} 
-                      className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
-                      onMouseDown={(e) => {
-                          e.preventDefault(); 
-                          setValue(p.id);
-                          setShowSuggestions(false);
-                      }}
-                  >
-                      <div className="flex flex-col max-w-[70%]">
-                          <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
-                          <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
-                      </div>
-                      <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">{p.id}</span>
-                  </div>
-              ))}
-          </div>
-      )}
-    </div>
-  );
-
   return (
     <div className="space-y-6 animate-in fade-in max-w-7xl mx-auto pb-24 transition-all duration-300">
       <DebugSection title="Check Save Data" desc="Browser local cache persistence status">
@@ -321,7 +327,8 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   setValue={setPartProjectId} 
                   showSuggestions={showPartProjSuggestions} 
                   setShowSuggestions={setShowPartProjSuggestions} 
-                  suggestions={partProjSuggestions} 
+                  suggestions={partProjSuggestions}
+                  cachedProjects={cachedProjects}
                 />
               </div>
             </div>
@@ -329,7 +336,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <DebugRow method="GET" path="/v1/participants/{login}" desc="Returns basic information" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}`, 'User Info'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/workstation" desc="Returns workstation" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/workstation`, 'Workstation'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/workstation`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/skills" desc="Returns skill points" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/skills`, 'Skills'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/skills`} isAnyLoading={isAnyLoading} />
-            <DebugRow method="GET" path="/v1/participants/{login}/projects" desc="Returns projects list" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) { let query = `/v1/participants/${id}/projects?limit=${partLimit || 50}&offset=${partOffset || 0}`; if (partStatus) query += `&status=${partStatus}`; onApiCall(query, 'Projects List'); } }} isLoading={loadingEndpoint?.includes(`/v1/participants/${partLogin}/projects?`)} isAnyLoading={isAnyLoading} />
+            <DebugRow method="GET" path="/v1/participants/{login}/projects" desc="Returns projects list" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) { let query = `/v1/participants/${id}/projects?limit=${partLimit || 50}&offset=${partOffset || 0}`; if (partStatus) query += `&status=${partStatus}`; onApiCall(query, 'Projects List'); } }} isLoading={loadingEndpoint?.includes?.(`/v1/participants/${partLogin}/projects?`)} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/projects/{projectId}" desc="Project by specific ID" onClick={() => { const id = getEncoded(partLogin, 'Login'); const pid = getEncoded(partProjectId, 'Project ID'); if(id && pid) onApiCall(`/v1/participants/${id}/projects/${pid}`, 'User Project Detail'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/projects/${partProjectId}`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/points" desc="Returns points" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/points`, 'Points'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/points`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/logtime" desc="Average logtime" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/logtime?date=${partDate}`, 'Logtime'); }} isLoading={loadingEndpoint?.includes?.(`/v1/participants/${partLogin}/logtime?date=${partDate}`)} isAnyLoading={isAnyLoading} />
@@ -355,6 +362,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
                   showSuggestions={showProjSuggestions} 
                   setShowSuggestions={setShowProjSuggestions} 
                   suggestions={projSuggestions} 
+                  cachedProjects={cachedProjects}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
