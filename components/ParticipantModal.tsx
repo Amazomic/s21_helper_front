@@ -82,23 +82,20 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
           ) : data ? (
             <div className="flex flex-col items-center gap-3">
               
-              {/* Row 1: Class, Login, Level */}
-              <div className="flex flex-wrap items-baseline justify-center gap-2 w-full pr-6">
-                  {/* Class */}
-                  <span className="text-sm font-bold text-gray-500 dark:text-gray-400 leading-none">
+              {/* Row 1: Login^Level Class */}
+              <div className="flex flex-wrap items-baseline justify-center w-full pr-6">
+                  <div className="flex items-start">
+                    <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
+                      {data.login}
+                    </h2>
+                    <span className="text-xs font-black text-primary dark:text-green-400 ml-0.5 -mt-1 select-none">
+                      {Math.floor(data.level)}
+                    </span>
+                  </div>
+
+                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2">
                     {data.className || 'N/A'}
                   </span>
-
-                  {/* Login Title */}
-                  <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
-                    {data.login}
-                  </h2>
-
-                  {/* Level */}
-                  <div className="flex items-baseline gap-0.5">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase leading-none">Lvl</span>
-                    <span className="text-sm font-black text-primary dark:text-green-400 leading-none">{Math.floor(data.level)}</span>
-                  </div>
               </div>
 
               {/* Row 2: Stats (Coalition, PRP, Coins) */}
