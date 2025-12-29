@@ -71,7 +71,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
         className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
       >
          <div className="flex items-baseline gap-2.5">
-            <h3 className="font-black text-gray-800 dark:text-white text-[10px] lg:text-xs uppercase tracking-[0.2em] group-hover:text-primary transition-colors duration-300">
+            <h3 className="font-black text-gray-800 dark:text-white text-[10px] lg:text-xs uppercase tracking-[0.2em] transition-colors duration-300">
                 Active Projects
             </h3>
             <span className={`text-[9px] lg:text-[10px] font-bold transition-colors ${activeProjects.length > 0 ? 'text-primary dark:text-green-400' : 'text-gray-400'}`}>
@@ -79,7 +79,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
             </span>
          </div>
          
-         <div className={`text-gray-300 dark:text-gray-600 group-hover:text-primary transition-all duration-500 transform ${isCollapsed ? 'rotate-0' : '-rotate-180'}`}>
+         <div className={`text-gray-300 dark:text-gray-600 transition-all duration-500 transform ${isCollapsed ? 'rotate-0' : '-rotate-180'}`}>
             <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
             </svg>
