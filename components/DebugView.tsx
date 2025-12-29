@@ -345,6 +345,31 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <DebugRow method="GET" path="/v1/participants/{login}/coalition" desc="Coalition info" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/coalition`, 'Coalition'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/coalition`} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/participants/{login}/badges" desc="Badges list" onClick={() => { const id = getEncoded(partLogin, 'Login'); if(id) onApiCall(`/v1/participants/${id}/badges`, 'Badges'); }} isLoading={loadingEndpoint === `/v1/participants/${partLogin}/badges`} isAnyLoading={isAnyLoading} />
           </DebugSection>
+          
+          <DebugSection title="Others" desc="Utility lookups">
+            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border dark:border-gray-800">
+              <label className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider mb-1 block">Generic ID / UUID</label>
+              <input type="text" value={genericId} onChange={(e) => setGenericId(e.target.value)} placeholder="Coalition/Cluster/Event ID" className="w-full px-4 py-2.5 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary outline-none font-mono text-xs" />
+            </div>
+            <DebugRow method="GET" path="/v1/coalitions/{coalitionId}/participants" desc="Coalition members" onClick={() => { const id = getEncoded(genericId, 'Resource ID'); if(id) onApiCall(`/v1/coalitions/${id}/participants?limit=50`, 'Coalition Participants'); }} isLoading={loadingEndpoint?.includes?.(`/coalitions/${genericId}/participants?`)} isAnyLoading={isAnyLoading} />
+            <DebugRow method="GET" path="/v1/clusters/{clusterId}/map" desc="Specific cluster map" onClick={() => { const id = getEncoded(genericId, 'Resource ID'); if(id) onApiCall(`/v1/clusters/${id}/map`, 'Cluster Map'); }} isLoading={loadingEndpoint === `/v1/clusters/${genericId}/map`} isAnyLoading={isAnyLoading} />
+            <DebugRow method="GET" path="/v1/sales" desc="School sales status" onClick={() => onApiCall('/v1/sales', 'Sales')} isLoading={loadingEndpoint === '/v1/sales'} isAnyLoading={isAnyLoading} />
+            <div className={`flex flex-col gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && loadingEndpoint !== '/v1/graph' ? 'opacity-50' : ''}`}>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase">GET</span>
+                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-600 dark:text-gray-300 truncate block bg-gray-100 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700/50">/v1/graph</span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">Project dependency graph</p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <Button variant={loadingEndpoint === '/v1/graph' ? 'primary' : 'secondary'} className={`w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black transition-all ${loadingEndpoint === '/v1/graph' ? 'bg-amber-500 text-white' : 'hover:bg-amber-500 hover:text-white'}`} onClick={() => onCacheApiCall('/v1/graph', 's21_graph_cache', 'Graph')} isLoading={loadingEndpoint === '/v1/graph'} disabled={isAnyLoading && loadingEndpoint !== '/v1/graph'} > Try </Button>
+                  <Button variant="secondary" className="w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenCached('s21_graph_cache', 'Graph')} disabled={isAnyLoading} > Cache </Button>
+                </div>
+              </div>
+            </div>
+          </DebugSection>
         </div>
 
         <div className="space-y-6">
@@ -524,31 +549,6 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <DebugRow method="GET" path="/v1/campuses/{campusId}/participants" desc="Participants in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/participants?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Participants'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/participants?')} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/campuses/{campusId}/coalitions" desc="Coalitions in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/coalitions?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Coalitions'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/coalitions?')} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/campuses/{campusId}/clusters" desc="Clusters in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/clusters/${id}/clusters`, 'Campus Clusters'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/clusters')} isAnyLoading={isAnyLoading} />
-          </DebugSection>
-
-          <DebugSection title="Others" desc="Utility lookups">
-            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-xl border dark:border-gray-800">
-              <label className="text-[10px] font-black uppercase text-gray-500 dark:text-gray-400 tracking-wider mb-1 block">Generic ID / UUID</label>
-              <input type="text" value={genericId} onChange={(e) => setGenericId(e.target.value)} placeholder="Coalition/Cluster/Event ID" className="w-full px-4 py-2.5 rounded-lg border dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-primary outline-none font-mono text-xs" />
-            </div>
-            <DebugRow method="GET" path="/v1/coalitions/{coalitionId}/participants" desc="Coalition members" onClick={() => { const id = getEncoded(genericId, 'Resource ID'); if(id) onApiCall(`/v1/coalitions/${id}/participants?limit=50`, 'Coalition Participants'); }} isLoading={loadingEndpoint?.includes?.(`/coalitions/${genericId}/participants?`)} isAnyLoading={isAnyLoading} />
-            <DebugRow method="GET" path="/v1/clusters/{clusterId}/map" desc="Specific cluster map" onClick={() => { const id = getEncoded(genericId, 'Resource ID'); if(id) onApiCall(`/v1/clusters/${id}/map`, 'Cluster Map'); }} isLoading={loadingEndpoint === `/v1/clusters/${genericId}/map`} isAnyLoading={isAnyLoading} />
-            <DebugRow method="GET" path="/v1/sales" desc="School sales status" onClick={() => onApiCall('/v1/sales', 'Sales')} isLoading={loadingEndpoint === '/v1/sales'} isAnyLoading={isAnyLoading} />
-            <div className={`flex flex-col gap-3 p-3 bg-gray-50 dark:bg-gray-900/40 rounded-lg border dark:border-gray-700 hover:border-amber-500/20 transition-all ${isAnyLoading && loadingEndpoint !== '/v1/graph' ? 'opacity-50' : ''}`}>
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded uppercase">GET</span>
-                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-600 dark:text-gray-300 truncate block bg-gray-100 dark:bg-gray-800/50 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700/50">/v1/graph</span>
-                  </div>
-                  <p className="text-[11px] text-gray-500 dark:text-gray-400 italic leading-tight">Project dependency graph</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Button variant={loadingEndpoint === '/v1/graph' ? 'primary' : 'secondary'} className={`w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black transition-all ${loadingEndpoint === '/v1/graph' ? 'bg-amber-500 text-white' : 'hover:bg-amber-500 hover:text-white'}`} onClick={() => onCacheApiCall('/v1/graph', 's21_graph_cache', 'Graph')} isLoading={loadingEndpoint === '/v1/graph'} disabled={isAnyLoading && loadingEndpoint !== '/v1/graph'} > Try </Button>
-                  <Button variant="secondary" className="w-full sm:w-28 h-8 px-4 text-[10px] uppercase font-black border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700" onClick={() => onOpenCached('s21_graph_cache', 'Graph')} disabled={isAnyLoading} > Cache </Button>
-                </div>
-              </div>
-            </div>
           </DebugSection>
         </div>
       </div>
