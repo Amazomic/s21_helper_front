@@ -320,10 +320,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     {results.map((login, idx) => (
                       <div key={`${idx}-${login}`} className="flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 transition-all group shadow-sm">
                         <div className="flex items-center gap-1.5 lg:gap-3">
-                          <div className="w-5 h-5 lg:w-9 lg:h-9 rounded-lg lg:rounded-xl bg-primary/10 flex items-center justify-center text-[7px] lg:text-xs font-black text-primary border border-primary/10">
-                            {login.substring(0, 2).toUpperCase()}
-                          </div>
-                          <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight">{login}</span>
+                          <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight pl-1">{login}</span>
                         </div>
                         <button 
                           onClick={() => handleViewParticipant(login)}
