@@ -67,20 +67,21 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         className={`relative mt-[74px] ml-2 sm:ml-4 w-[calc(100%-1rem)] max-w-sm max-h-[calc(100vh-90px)] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 origin-top-left transition-all duration-200 ease-out transform-gpu ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Class Name - Top Left (Like in View/ParticipantModal) */}
-        {userData?.className && (
-          <div className="absolute top-3 left-4 z-50">
-            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
-              {userData.className}
-            </span>
+        {/* Fixed Header Section */}
+        <div className="flex-none flex items-center justify-between px-4 pt-3 pb-2 z-50">
+          <div className="h-4 flex items-center">
+            {/* Class Name */}
+            {userData?.className && (
+              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+                {userData.className}
+              </span>
+            )}
           </div>
-        )}
 
-        {/* Sticky Header with Close Button (Small, like in View/ParticipantModal) */}
-        <div className="absolute top-3 right-3 z-50">
+          {/* Close Button */}
           <button 
             onClick={onClose}
-            className="p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors backdrop-blur-sm"
+            className="p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
@@ -89,7 +90,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto p-4 space-y-4 pt-8 scrollbar-hide">
+        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 scrollbar-hide min-h-0">
           <UserProfileCard 
             data={userData} 
             points={pointsData} 
