@@ -24,7 +24,7 @@ interface Campus {
 export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId }) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
   const [selectedCampusId, setSelectedCampusId] = useState<string>(initialCampusId || '');
   const [results, setResults] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -329,7 +329,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     className={`px-1.5 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl text-[7px] lg:text-[9px] font-black transition-all border uppercase tracking-tighter ${
                       selectedStatus === s 
                         ? 'bg-primary text-white border-primary shadow-sm' 
-                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:border-primary/30'
+                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:border-primary/30 hover:text-primary dark:hover:text-primary'
                     }`}
                   >
                     {s}
