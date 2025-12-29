@@ -101,7 +101,7 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                         <span className="text-[10px] font-black text-primary dark:text-green-400 leading-none">
                             {Math.floor(data.level)}
                         </span>
-                        <span className="text-[6px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-none ml-0.5">
+                        <span className="text-[5px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-none ml-0.5">
                             lvl
                         </span>
                     </div>
