@@ -97,10 +97,12 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
                       {data.login}
                     </h2>
-                    <div className="flex flex-col items-start ml-0.5 -mt-1">
-                        <span className="text-[6px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-none">lvl</span>
-                        <span className="text-[9px] font-black text-primary dark:text-green-400 leading-none">
+                    <div className="flex items-baseline ml-0.5 -mt-1">
+                        <span className="text-[10px] font-black text-primary dark:text-green-400 leading-none">
                             {Math.floor(data.level)}
+                        </span>
+                        <span className="text-[6px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-none ml-0.5">
+                            lvl
                         </span>
                     </div>
                   </div>
