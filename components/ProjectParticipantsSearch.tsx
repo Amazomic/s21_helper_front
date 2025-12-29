@@ -351,17 +351,18 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                 <div className="space-y-1 lg:space-y-3 animate-in fade-in">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 lg:gap-3 max-h-[200px] lg:max-h-[500px] overflow-y-auto pr-0.5 custom-scrollbar">
                     {results.map((login, idx) => (
-                      <div key={`${idx}-${login}`} className="flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 transition-all group shadow-sm">
-                        <div className="flex items-center gap-1.5 lg:gap-3">
-                          <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight pl-1">{login}</span>
+                      <button 
+                        key={`${idx}-${login}`} 
+                        onClick={() => handleViewParticipant(login)}
+                        className="w-full flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-md transition-all group shadow-sm cursor-pointer text-left"
+                      >
+                        <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight pl-1">{login}</span>
+                        <div className="text-gray-300 group-hover:text-primary transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
                         </div>
-                        <button 
-                          onClick={() => handleViewParticipant(login)}
-                          className="text-[7px] lg:text-[10px] font-black px-1.5 lg:px-3 py-0.5 lg:py-1 rounded-lg lg:rounded-xl uppercase bg-primary/5 text-primary border border-primary/10 group-hover:bg-primary group-hover:text-white transition-colors cursor-pointer"
-                        >
-                          VIEW
-                        </button>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
