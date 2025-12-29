@@ -1,3 +1,4 @@
+
 import { AuthResponse } from '../types';
 
 const AUTH_ENDPOINT = '/auth-proxy/auth/realms/EduPowerKeycloak/protocol/openid-connect/token';
@@ -25,14 +26,67 @@ export const loginUser = async (username: string, password: string): Promise<Aut
   return data;
 };
 
-export const fetchData = async (endpoint: string, token: string): Promise<any> => {
-  const response = await fetch(`${API_BASE}${endpoint}`, {
-    method: 'GET',
+export const refreshUserToken = async (refreshToken: string): Promise<AuthResponse> => {
+  const params = new URLSearchParams();
+  params.append('client_id', 's21-open-api');
+  params.append('grant_type', 'refresh_token');
+  params.append('refresh_token', refreshToken);
+
+  const response = await fetch(AUTH_ENDPOINT, {
+    method: 'POST',
     headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/x-www-form-urlencoded',
     },
+    body: params,
   });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error_description || data.error || 'Token refresh failed');
+  }
+  return data;
+};
+
+export const fetchData = async (endpoint: string, token: string): Promise<any> => {
+  const makeRequest = async (currentToken: string) => {
+    return fetch(`${API_BASE}${endpoint}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${currentToken}`,
+        'Content-Type': 'application/json',
+      },
+    });
+  };
+
+  let response = await makeRequest(token);
+
+  // Handle 401 Unauthorized by attempting to refresh the token
+  if (response.status === 401) {
+    const refreshToken = localStorage.getItem('s21_refresh_token');
+    
+    if (refreshToken) {
+      try {
+        // Attempt to get a new token
+        const newAuthData = await refreshUserToken(refreshToken);
+        
+        // Update local storage
+        localStorage.setItem('s21_auth_token', newAuthData.access_token);
+        localStorage.setItem('s21_refresh_token', newAuthData.refresh_token);
+        localStorage.setItem('s21_auth_token_timestamp', new Date().toISOString());
+
+        // Dispatch event so App.tsx can update its state
+        window.dispatchEvent(new CustomEvent('s21:token_updated', { 
+          detail: newAuthData.access_token 
+        }));
+
+        // Retry the original request with the new token
+        response = await makeRequest(newAuthData.access_token);
+      } catch (refreshError) {
+        console.error("Session refresh failed:", refreshError);
+        // If refresh fails, we allow the 401 response to proceed so the UI handles it normally (e.g. show error)
+      }
+    }
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -40,12 +94,11 @@ export const fetchData = async (endpoint: string, token: string): Promise<any> =
   }
 
   const text = await response.text();
-  if (!text || text.trim() === '') return null; // Handle empty responses (204 or empty 200)
+  if (!text || text.trim() === '') return null;
 
   try {
     return JSON.parse(text);
   } catch (e) {
-    // If it's not valid JSON but was successful, return the raw text
     return text;
   }
 };

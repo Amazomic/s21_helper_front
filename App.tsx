@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
+import { AuthResponse } from './types';
 
 // Fix: Add global type declaration for Telegram WebApp on Window interface
 declare global {
@@ -27,6 +28,18 @@ const App: React.FC = () => {
     return window.matchMedia('(prefers-color-scheme: dark)').matches;
   });
 
+  // Listen for token updates from apiService (when auto-refresh happens)
+  useEffect(() => {
+    const handleTokenUpdate = (event: CustomEvent<string>) => {
+      setToken(event.detail);
+    };
+
+    window.addEventListener('s21:token_updated', handleTokenUpdate as EventListener);
+    return () => {
+      window.removeEventListener('s21:token_updated', handleTokenUpdate as EventListener);
+    };
+  }, []);
+
   // Telegram Web App initialization
   useEffect(() => {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -46,13 +59,14 @@ const App: React.FC = () => {
 
   const toggleDarkMode = () => setDarkMode(!darkMode);
 
-  const handleLoginSuccess = (user: string, accessToken: string) => {
+  const handleLoginSuccess = (user: string, authData: AuthResponse) => {
     const normalizedUsername = user.toLowerCase().trim();
     setUsername(normalizedUsername);
-    setToken(accessToken);
+    setToken(authData.access_token);
     
     // Persist session
-    localStorage.setItem('s21_auth_token', accessToken);
+    localStorage.setItem('s21_auth_token', authData.access_token);
+    localStorage.setItem('s21_refresh_token', authData.refresh_token);
     localStorage.setItem('s21_username', normalizedUsername);
     localStorage.setItem('s21_auth_token_timestamp', new Date().toISOString());
   };

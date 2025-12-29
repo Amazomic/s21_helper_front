@@ -1,9 +1,11 @@
+
 import React, { useState } from 'react';
 import { loginUser } from '../services/apiService';
 import { Button } from './ui/Button';
+import { AuthResponse } from '../types';
 
 interface LoginFormProps {
-  onLoginSuccess: (username: string, token: string) => void;
+  onLoginSuccess: (username: string, authData: AuthResponse) => void;
 }
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
@@ -24,7 +26,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
     try {
       const data = await loginUser(normalizedUsername, password);
-      onLoginSuccess(normalizedUsername, data.access_token);
+      onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {
       setError(err.message || 'Login failed');
     } finally {
