@@ -46,7 +46,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
       setIsVisible(true);
       document.body.style.overflow = 'hidden';
     } else {
-      const timer = setTimeout(() => setIsVisible(false), 300);
+      const timer = setTimeout(() => setIsVisible(false), 200);
       document.body.style.overflow = 'unset';
       return () => clearTimeout(timer);
     }
@@ -55,31 +55,32 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   if (!isVisible && !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex justify-start pointer-events-none" role="dialog" aria-modal="true">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-[100] flex justify-start items-start" role="dialog" aria-modal="true">
+      {/* Invisible Backdrop to handle click-outside */}
       <div 
-        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 pointer-events-auto ${isOpen ? 'opacity-100' : 'opacity-0'}`}
+        className="absolute inset-0 bg-transparent"
         onClick={onClose}
       />
 
-      {/* Drawer Panel - Left Aligned */}
+      {/* Popover Window - Positioned under the header button */}
       <div 
-        className={`relative w-full max-w-sm h-full bg-gray-100/95 dark:bg-gray-900/95 backdrop-blur-2xl shadow-2xl overflow-y-auto custom-scrollbar border-r border-white/20 dark:border-gray-800 transition-transform duration-300 ease-out transform pointer-events-auto ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`relative mt-[70px] ml-4 lg:ml-6 w-[calc(100%-2rem)] max-w-sm max-h-[calc(100vh-90px)] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 origin-top-left transition-all duration-200 ease-out ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Sticky Header with Close Button */}
-        <div className="sticky top-0 z-50 flex justify-end p-4 bg-gradient-to-b from-gray-100/90 to-transparent dark:from-gray-900/90 pointer-events-none">
+        <div className="absolute top-2 right-2 z-50">
           <button 
             onClick={onClose}
-            className="pointer-events-auto p-2 rounded-full bg-white dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white shadow-sm border border-gray-200 dark:border-gray-700 transition-colors"
+            className="p-1.5 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors backdrop-blur-sm"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <div className="px-4 pb-24 -mt-12 space-y-6">
-            
+        {/* Scrollable Content */}
+        <div className="overflow-y-auto custom-scrollbar p-4 space-y-4 pt-8">
           <UserProfileCard 
             data={userData} 
             points={pointsData} 
