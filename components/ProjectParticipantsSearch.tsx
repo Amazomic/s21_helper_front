@@ -32,6 +32,10 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0); 
+  
+  // New state for cache loading
+  const [isCacheLoading, setIsCacheLoading] = useState(false);
+  
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Modal State
@@ -41,6 +45,19 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [modalError, setModalError] = useState<string | null>(null);
 
   const statuses = ['ASSIGNED', 'REGISTERED', 'IN_PROGRESS', 'IN_REVIEWS', 'ACCEPTED', 'FAILED'];
+
+  // Check cache presence and auto-load if missing
+  useEffect(() => {
+    const checkAndLoadCache = async () => {
+      const hasGraph = !!localStorage.getItem('s21_graph_cache');
+      const hasCampuses = !!localStorage.getItem('s21_campuses_cache');
+
+      if (!hasGraph || !hasCampuses) {
+        await handleRefreshCache();
+      }
+    };
+    checkAndLoadCache();
+  }, []); // Run once on mount
 
   useEffect(() => {
     const check = () => setCacheVersion(v => v + 1);
@@ -109,6 +126,31 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     if (hasProjects || hasCampuses) return 'PARTIAL';
     return 'MISSING';
   }, [projects, campuses]);
+
+  const handleRefreshCache = async () => {
+    if (isCacheLoading) return;
+    setIsCacheLoading(true);
+    try {
+      // Fetch graph and campuses in parallel
+      const [graphData, campusesData] = await Promise.all([
+        fetchData('/v1/graph', token),
+        fetchData('/v1/campuses', token)
+      ]);
+
+      localStorage.setItem('s21_graph_cache', JSON.stringify(graphData));
+      localStorage.setItem('s21_graph_cache_timestamp', new Date().toISOString());
+
+      localStorage.setItem('s21_campuses_cache', JSON.stringify(campusesData));
+      localStorage.setItem('s21_campuses_cache_timestamp', new Date().toISOString());
+
+      // Force update local state
+      setCacheVersion(v => v + 1);
+    } catch (e) {
+      console.error("Failed to refresh global cache", e);
+    } finally {
+      setIsCacheLoading(false);
+    }
+  };
 
   const suggestions = useMemo(() => {
     const term = query.toLowerCase().trim();
@@ -213,18 +255,38 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                 <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
               </div>
               
-              <div className="flex-shrink-0">
-                {cacheStatus === 'READY' ? (
-                  <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
-                    <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">READY</span>
+              <div className="flex-shrink-0 flex items-center gap-2">
+                {isCacheLoading ? (
+                  <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                    <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                    <span className="text-[7px] lg:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter">LOADING</span>
                   </div>
                 ) : (
-                  <div className="px-1.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-1 shadow-sm">
-                    <div className={`w-1 h-1 rounded-full ${cacheStatus === 'PARTIAL' ? 'bg-amber-50' : 'bg-red-500'}`}></div>
-                    <span className="text-[7px] font-black uppercase tracking-tighter">{cacheStatus}</span>
-                  </div>
+                  <>
+                    {cacheStatus === 'READY' ? (
+                      <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                        <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">READY</span>
+                      </div>
+                    ) : (
+                      <div className="px-1.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-1 shadow-sm">
+                        <div className={`w-1 h-1 rounded-full ${cacheStatus === 'PARTIAL' ? 'bg-amber-50' : 'bg-red-500'}`}></div>
+                        <span className="text-[7px] font-black uppercase tracking-tighter">{cacheStatus}</span>
+                      </div>
+                    )}
+                  </>
                 )}
+                
+                <button 
+                  onClick={handleRefreshCache}
+                  disabled={isCacheLoading}
+                  className={`p-1 lg:p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/10 transition-all ${isCacheLoading ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                  title="Refresh Graph & Campuses"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${isCacheLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
               </div>
             </div>
 
