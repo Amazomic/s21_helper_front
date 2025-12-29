@@ -58,6 +58,15 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
         className="relative bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Class Name - Top Left */}
+        {data && (
+           <div className="absolute top-3 left-4 z-50">
+             <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+               {data.className || 'N/A'}
+             </span>
+           </div>
+        )}
+
         {/* Small Top-Right Close Button */}
         <button 
           onClick={onClose}
@@ -82,20 +91,19 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
           ) : data ? (
             <div className="flex flex-col items-center gap-3">
               
-              {/* Row 1: Login^Level Class */}
-              <div className="flex flex-wrap items-baseline justify-center w-full pr-6">
+              {/* Row 1: Login + Level superscript */}
+              <div className="flex items-start justify-center w-full mt-1">
                   <div className="flex items-start">
                     <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
                       {data.login}
                     </h2>
-                    <span className="text-xs font-black text-primary dark:text-green-400 ml-0.5 -mt-1 select-none">
-                      {Math.floor(data.level)}
-                    </span>
+                    <div className="flex flex-col items-start ml-0.5 -mt-1">
+                        <span className="text-[6px] font-bold text-gray-400 dark:text-gray-500 uppercase leading-none">lvl</span>
+                        <span className="text-[9px] font-black text-primary dark:text-green-400 leading-none">
+                            {Math.floor(data.level)}
+                        </span>
+                    </div>
                   </div>
-
-                  <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider ml-2">
-                    {data.className || 'N/A'}
-                  </span>
               </div>
 
               {/* Row 2: Stats (Coalition, PRP, Coins) */}
