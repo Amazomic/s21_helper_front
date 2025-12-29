@@ -329,7 +329,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     className={`px-1.5 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl text-[7px] lg:text-[9px] font-black transition-all border uppercase tracking-tighter ${
                       selectedStatus === s 
                         ? 'bg-primary text-white border-primary shadow-sm' 
-                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 hover:border-primary/30 hover:text-primary dark:hover:text-primary'
+                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 lg:hover:border-primary/30 lg:hover:text-primary dark:lg:hover:text-primary'
                     }`}
                   >
                     {s}
