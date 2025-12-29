@@ -62,18 +62,27 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         onClick={onClose}
       />
 
-      {/* Popover Window - Positioned under the header button with minimal left offset */}
+      {/* Popover Window - Positioned under the header button with margin (mt-[74px]) */}
       <div 
-        className={`relative mt-[65px] ml-2 sm:ml-4 w-[calc(100%-1rem)] max-w-sm max-h-[calc(100vh-80px)] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 origin-top-left transition-all duration-200 ease-out ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`relative mt-[74px] ml-2 sm:ml-4 w-[calc(100%-1rem)] max-w-sm max-h-[calc(100vh-90px)] flex flex-col bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl rounded-2xl shadow-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 origin-top-left transition-all duration-200 ease-out ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Sticky Header with Close Button */}
-        <div className="absolute top-2 right-2 z-50">
+        {/* Class Name - Top Left (Like in View/ParticipantModal) */}
+        {userData?.className && (
+          <div className="absolute top-3 left-4 z-50">
+            <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">
+              {userData.className}
+            </span>
+          </div>
+        )}
+
+        {/* Sticky Header with Close Button (Small, like in View/ParticipantModal) */}
+        <div className="absolute top-3 right-3 z-50">
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors backdrop-blur-sm"
+            className="p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors backdrop-blur-sm"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>

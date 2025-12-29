@@ -220,7 +220,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setModalOpen(true);
   };
 
-  const headerTitle = userData?.className || 'Portal';
+  // We rely on userData.className but don't display it in header anymore
   const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (xpHistoryLoading && !xpHistoryData) || (projectsLoading && !projectsData);
 
   return (
@@ -240,12 +240,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {username.charAt(0).toUpperCase()}
             </button>
             <div className="flex flex-col items-start">
-              <h1 className="font-semibold text-gray-900 dark:text-white tracking-tight leading-none text-lg">
+              {/* Updated font to font-black to match Project Search style */}
+              <h1 className="font-black text-gray-900 dark:text-white tracking-tight leading-none text-lg">
                 {username}
               </h1>
-              <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-0.5">
-                {headerTitle}
-              </p>
             </div>
           </div>
           
