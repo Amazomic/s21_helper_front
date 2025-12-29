@@ -82,22 +82,22 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
           ) : data ? (
             <div className="flex flex-col items-center gap-3">
               
-              {/* Row 1: Login, Class, Level */}
-              <div className="flex flex-wrap items-center justify-center gap-2 w-full pr-6">
+              {/* Row 1: Class, Login, Level */}
+              <div className="flex flex-wrap items-baseline justify-center gap-2 w-full pr-6">
+                  {/* Class */}
+                  <span className="text-sm font-bold text-gray-500 dark:text-gray-400 leading-none">
+                    {data.className || 'N/A'}
+                  </span>
+
                   {/* Login Title */}
                   <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
                     {data.login}
                   </h2>
 
-                  {/* Class */}
-                  <div className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 flex items-center">
-                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-200 leading-none">{data.className || 'N/A'}</span>
-                  </div>
-
                   {/* Level */}
-                  <div className="px-2 py-1 bg-primary/5 border border-primary/20 rounded-md flex items-center gap-1">
+                  <div className="flex items-baseline gap-0.5">
                     <span className="text-[10px] font-bold text-gray-400 uppercase leading-none">Lvl</span>
-                    <span className="text-[10px] font-black text-primary dark:text-green-400 leading-none">{Math.floor(data.level)}</span>
+                    <span className="text-sm font-black text-primary dark:text-green-400 leading-none">{Math.floor(data.level)}</span>
                   </div>
               </div>
 
