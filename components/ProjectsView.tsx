@@ -86,7 +86,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
          </div>
       </button>
       
-      <div className={`transition-all duration-500 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
+      <div className={`transition-all duration-300 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
         <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
             {activeProjects.length === 0 ? (
                 <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">

@@ -43,7 +43,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
   const coalition = data.coalition;
 
   return (
-    <Card className="relative overflow-hidden bg-white dark:bg-gray-900 shadow-md border-none rounded-3xl group">
+    <Card className="relative overflow-hidden bg-white dark:bg-gray-900 shadow-md border-none rounded-3xl group transform-gpu">
       <div className="absolute top-0 right-0 -mt-6 -mr-6 w-20 h-20 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
 
       <div className="flex flex-col gap-2 lg:gap-4">
