@@ -89,7 +89,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="overflow-y-auto custom-scrollbar p-4 space-y-4 pt-8">
+        <div className="overflow-y-auto p-4 space-y-4 pt-8 scrollbar-hide">
           <UserProfileCard 
             data={userData} 
             points={pointsData} 
@@ -116,6 +116,15 @@ export const UserMenu: React.FC<UserMenuProps> = ({
           />
         </div>
       </div>
+      <style>{`
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+      `}</style>
     </div>
   );
 };
