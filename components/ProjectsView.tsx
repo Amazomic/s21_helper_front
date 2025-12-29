@@ -74,7 +74,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
             <h3 className="font-black text-gray-800 dark:text-white group-hover:text-primary dark:group-hover:text-primary text-[10px] lg:text-xs uppercase tracking-[0.2em] transition-colors duration-300">
                 Active Projects
             </h3>
-            <span className={`text-[9px] lg:text-[10px] font-bold transition-colors ${activeProjects.length > 0 ? 'text-primary dark:text-green-400' : 'text-gray-400'}`}>
+            <span className="text-[9px] lg:text-[10px] font-bold text-gray-400 dark:text-gray-500 transition-colors">
                 ({activeProjects.length})
             </span>
          </div>
@@ -87,7 +87,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
       </button>
       
       <div className={`transition-all duration-300 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
-        <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
+        <div className="px-3 lg:px-4 pt-3 lg:pt-4 pb-3 lg:pb-4 space-y-2">
             {activeProjects.length === 0 ? (
                 <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                     No active projects
