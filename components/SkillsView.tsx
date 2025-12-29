@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card } from './ui/Card';
 
 interface Skill {
@@ -18,14 +18,8 @@ interface SkillsViewProps {
 }
 
 export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }) => {
-  // Collapse by default on mobile screens (< 1024px)
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [activeSkill, setActiveSkill] = useState<Skill | null>(null);
-
-  useEffect(() => {
-    const isMobile = window.innerWidth < 1024;
-    setIsCollapsed(isMobile);
-  }, []);
 
   const sortedSkills = useMemo(() => {
     if (!data?.skills) return [];

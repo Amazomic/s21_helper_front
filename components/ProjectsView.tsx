@@ -1,5 +1,5 @@
 
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Card } from './ui/Card';
 
 interface Project {
@@ -16,12 +16,7 @@ interface ProjectsViewProps {
 }
 
 export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, error }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
-
-  useEffect(() => {
-    const isMobile = window.innerWidth < 1024;
-    setIsCollapsed(isMobile);
-  }, []);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const activeProjects = useMemo(() => {
     if (!data) return [];
