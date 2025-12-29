@@ -263,7 +263,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-6 pt-2 pb-6">
+      <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
           <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
              <ProjectParticipantsSearch 
