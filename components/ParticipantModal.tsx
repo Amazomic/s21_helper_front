@@ -52,95 +52,83 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div 
-        className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-md flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden"
+        className="bg-white dark:bg-gray-900 rounded-3xl w-full max-w-sm flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header with Close Button */}
-        <div className="p-4 flex justify-between items-start bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
-           <h3 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight">
-             Participant Info
-           </h3>
+        <div className="p-3 flex justify-end items-center bg-transparent absolute top-0 right-0 z-10">
            <button 
              onClick={onClose}
-             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors backdrop-blur-sm"
            >
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
              </svg>
            </button>
         </div>
 
-        <div className="p-5 space-y-6">
+        <div className="p-5 pt-8 space-y-6">
           {isLoading ? (
-            <div className="space-y-4 animate-pulse">
-               <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
-                 <div className="space-y-2 flex-1">
-                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                   <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-                 </div>
+            <div className="space-y-4 animate-pulse flex flex-col items-center">
+               <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/2 mb-2"></div>
+               <div className="flex gap-2 w-full justify-center">
+                  <div className="h-10 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                  <div className="h-10 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                  <div className="h-10 w-16 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
                </div>
-               <div className="h-12 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+               <div className="h-24 w-full bg-gray-200 dark:bg-gray-700 rounded-xl mt-4"></div>
             </div>
           ) : error ? (
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 rounded-xl text-center">
                <p className="text-sm text-red-500 font-bold">{error}</p>
             </div>
           ) : data ? (
-            <>
-              {/* User Details */}
-              <div className="flex items-center gap-4">
-                 <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-black text-2xl border border-primary/20 shadow-inner">
-                    {data.login.charAt(0).toUpperCase()}
+            <div className="flex flex-col items-center gap-5">
+              
+              {/* Login Title */}
+              <h2 className="text-3xl font-black text-gray-900 dark:text-white leading-none tracking-tight text-center">
+                {data.login}
+              </h2>
+
+              {/* Compact Stats Grid */}
+              <div className="flex flex-wrap justify-center gap-2 w-full">
+                 
+                 {/* Class */}
+                 <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 min-w-[4rem]">
+                    <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Class</span>
+                    <span className="text-xs font-black text-gray-700 dark:text-gray-200 leading-none">{data.className || 'N/A'}</span>
                  </div>
-                 <div className="flex flex-col gap-1">
-                    <h2 className="text-2xl font-black text-gray-900 dark:text-white leading-none">
-                      {data.login}
-                    </h2>
-                    <div className="flex gap-2 mt-1">
-                       <div className="px-2 py-0.5 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Class</span>
-                          <span className="text-[10px] font-black text-gray-700 dark:text-gray-200">{data.className || 'N/A'}</span>
-                       </div>
-                       <div className="px-2 py-0.5 rounded-lg bg-primary/5 border border-primary/10 flex items-center gap-1.5">
-                          <span className="text-[9px] font-bold text-gray-400 uppercase">Level</span>
-                          <span className="text-[10px] font-black text-primary dark:text-green-400">{Math.floor(data.level)}</span>
-                       </div>
-                    </div>
+
+                 {/* Level */}
+                 <div className="flex flex-col items-center justify-center bg-primary/5 border border-primary/20 rounded-xl px-3 py-1.5 min-w-[3.5rem]">
+                    <span className="text-[8px] font-bold text-primary/60 dark:text-green-400/60 uppercase tracking-wider mb-0.5">Level</span>
+                    <span className="text-xs font-black text-primary dark:text-green-400 leading-none">{Math.floor(data.level)}</span>
                  </div>
-              </div>
 
-              {/* Stats Row */}
-              <div className="flex items-stretch gap-2 w-full">
-                  {/* Coalition Box */}
-                  <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-800 shadow-inner min-w-0">
-                      <span className="text-xs font-black text-gray-800 dark:text-white truncate w-full text-center leading-tight">
-                          {data.coalition ? data.coalition.name : 'Freelance'}
-                      </span>
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight truncate w-full text-center">
-                          R:{data.coalition ? (data.coalition.rank ?? 'null') : 'none'}
-                      </span>
-                  </div>
+                 {/* Coalition */}
+                 <div className="flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-1.5 min-w-[5rem]">
+                    <span className="text-[9px] font-black text-gray-800 dark:text-white leading-none mb-0.5">{data.coalition ? data.coalition.name : '-'}</span>
+                    <span className="text-[7px] font-bold text-gray-400 uppercase tracking-wider leading-none">
+                      Rank: {data.coalition ? (data.coalition.rank ?? '-') : '-'}
+                    </span>
+                 </div>
 
-                  {/* PRP Box */}
-                  <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-3 py-2 min-w-[3.5rem] border border-blue-500/10 shadow-inner">
-                      <span className="text-xs font-black text-blue-600 dark:text-blue-400 leading-none">
-                          {data.points?.peerReviewPoints || 0}
-                      </span>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">PRP</span>
-                  </div>
+                 {/* PRP */}
+                 <div className="flex flex-col items-center justify-center bg-blue-500/5 border border-blue-500/20 rounded-xl px-3 py-1.5 min-w-[3.5rem]">
+                    <span className="text-xs font-black text-blue-600 dark:text-blue-400 leading-none mb-0.5">{data.points?.peerReviewPoints || 0}</span>
+                    <span className="text-[7px] font-bold text-blue-400/70 uppercase tracking-wider leading-none">PRP</span>
+                 </div>
 
-                  {/* Coins Box */}
-                  <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-3 py-2 min-w-[3.5rem] border border-amber-500/10 shadow-inner">
-                      <span className="text-xs font-black text-amber-500 leading-none">
-                          {data.points?.coins || 0}
-                      </span>
-                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">COIN</span>
-                  </div>
+                 {/* Coins */}
+                 <div className="flex flex-col items-center justify-center bg-amber-500/5 border border-amber-500/20 rounded-xl px-3 py-1.5 min-w-[3.5rem]">
+                    <span className="text-xs font-black text-amber-500 leading-none mb-0.5">{data.points?.coins || 0}</span>
+                    <span className="text-[7px] font-bold text-amber-500/70 uppercase tracking-wider leading-none">Coin</span>
+                 </div>
+
               </div>
 
               {/* Projects Block */}
-              <div className="flex flex-col bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden transition-all duration-300">
+              <div className="w-full flex flex-col bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden transition-all duration-300">
                 <button 
                   onClick={() => setIsProjectsCollapsed(!isProjectsCollapsed)}
                   className="flex items-center justify-between w-full p-4 hover:bg-gray-100/50 dark:hover:bg-white/5 transition-colors cursor-pointer"
@@ -181,12 +169,8 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           ) : null}
-        </div>
-        
-        <div className="p-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-800">
-           <Button variant="secondary" onClick={onClose}>Close</Button>
         </div>
       </div>
     </div>
