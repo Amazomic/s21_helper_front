@@ -13,6 +13,14 @@ interface ParticipantData {
   level: number;
   className: string;
   projects: Project[];
+  points?: {
+    peerReviewPoints: number;
+    coins: number;
+  };
+  coalition?: {
+    name: string;
+    rank: string | null;
+  };
 }
 
 interface ParticipantModalProps {
@@ -100,6 +108,35 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                        </div>
                     </div>
                  </div>
+              </div>
+
+              {/* Stats Row */}
+              <div className="flex items-stretch gap-2 w-full">
+                  {/* Coalition Box */}
+                  <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-2 py-2 border border-gray-100 dark:border-gray-800 shadow-inner min-w-0">
+                      <span className="text-xs font-black text-gray-800 dark:text-white truncate w-full text-center leading-tight">
+                          {data.coalition ? data.coalition.name : 'Freelance'}
+                      </span>
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tight truncate w-full text-center">
+                          R:{data.coalition ? (data.coalition.rank ?? 'null') : 'none'}
+                      </span>
+                  </div>
+
+                  {/* PRP Box */}
+                  <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-3 py-2 min-w-[3.5rem] border border-blue-500/10 shadow-inner">
+                      <span className="text-xs font-black text-blue-600 dark:text-blue-400 leading-none">
+                          {data.points?.peerReviewPoints || 0}
+                      </span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">PRP</span>
+                  </div>
+
+                  {/* Coins Box */}
+                  <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-3 py-2 min-w-[3.5rem] border border-amber-500/10 shadow-inner">
+                      <span className="text-xs font-black text-amber-500 leading-none">
+                          {data.points?.coins || 0}
+                      </span>
+                      <span className="text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">COIN</span>
+                  </div>
               </div>
 
               {/* Projects Block */}

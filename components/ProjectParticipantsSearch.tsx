@@ -160,10 +160,12 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     setModalData(null);
 
     try {
-      const [userData, progressData, reviewsData] = await Promise.all([
+      const [userData, progressData, reviewsData, pointsData, coalitionRes] = await Promise.all([
         fetchData(`/v1/participants/${login}`, token),
         fetchData(`/v1/participants/${login}/projects?limit=50&offset=0&status=IN_PROGRESS`, token),
-        fetchData(`/v1/participants/${login}/projects?limit=50&offset=0&status=IN_REVIEWS`, token)
+        fetchData(`/v1/participants/${login}/projects?limit=50&offset=0&status=IN_REVIEWS`, token),
+        fetchData(`/v1/participants/${login}/points`, token).catch(() => null),
+        fetchData(`/v1/participants/${login}/coalition`, token).catch(() => null),
       ]);
 
       const projects = [
@@ -174,11 +176,21 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       // Remove duplicates if any
       const uniqueProjects = Array.from(new Map(projects.map((p: any) => [p.id, p])).values());
 
+      // Normalize coalition data
+      let coalition = null;
+      if (Array.isArray(coalitionRes) && coalitionRes.length > 0) {
+        coalition = coalitionRes[0];
+      } else if (coalitionRes && !Array.isArray(coalitionRes)) {
+        coalition = coalitionRes;
+      }
+
       setModalData({
         login: userData.login,
         level: userData.level,
         className: userData.className,
-        projects: uniqueProjects
+        projects: uniqueProjects,
+        points: pointsData,
+        coalition: coalition
       });
     } catch (err: any) {
       setModalError(err.message);
