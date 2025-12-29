@@ -231,8 +231,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div className="h-full bg-primary animate-[loading_1.5s_infinite] origin-left scale-x-0 w-[40%]"></div>
           </div>
         )}
-        <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3 -ml-1">
+        <div className="w-full px-4 sm:px-6 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-3">
             <button 
               onClick={() => setUserMenuOpen(true)}
               className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
