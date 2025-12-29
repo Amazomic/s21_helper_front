@@ -50,24 +50,25 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
+      onClick={onClose}
+    >
       <div 
-        className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden"
+        className="relative bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header with Close Button */}
-        <div className="absolute top-2 right-2 z-10">
-           <button 
-             onClick={onClose}
-             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1.5 rounded-full bg-gray-100/50 dark:bg-gray-800/50 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors backdrop-blur-sm"
-           >
-             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-             </svg>
-           </button>
-        </div>
+        {/* Small Top-Left Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-3 left-3 p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors z-50"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
-        <div className="p-4 pt-6 space-y-4">
+        <div className="p-4 pt-8 space-y-4">
           {isLoading ? (
             <div className="space-y-4 animate-pulse flex flex-col items-center">
                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/3 mb-1"></div>
