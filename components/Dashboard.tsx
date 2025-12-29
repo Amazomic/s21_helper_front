@@ -239,7 +239,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             >
               {username.charAt(0).toUpperCase()}
             </button>
-            <div className="flex flex-col items-start select-none">
+            <div className="flex flex-col items-start">
               <h1 className="font-semibold text-gray-900 dark:text-white tracking-tight leading-none text-lg">
                 {username}
               </h1>
