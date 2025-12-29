@@ -269,7 +269,6 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <CacheStatusRow label="Projects" cacheKey="s21_projects_cache" />
             <CacheStatusRow label="Points Data" cacheKey="s21_points_cache" />
             <CacheStatusRow label="Skills Data" cacheKey="s21_skills_cache" />
-            <CacheStatusRow label="XP History" cacheKey="s21_history_cache" />
             <CacheStatusRow label="Graph Data" cacheKey="s21_graph_cache" />
             <CacheStatusRow label="Campuses" cacheKey="s21_campuses_cache" />
          </div>

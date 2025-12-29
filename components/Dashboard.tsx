@@ -57,15 +57,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
-  const [xpHistoryData, setXpHistoryData] = useState<any>(() => {
-    try {
-      const saved = localStorage.getItem('s21_history_cache');
-      return saved ? JSON.parse(saved) : null;
-    } catch { return null; }
-  });
-  const [xpHistoryLoading, setXpHistoryLoading] = useState(false);
-  const [xpHistoryError, setXpHistoryError] = useState<string | null>(null);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
   const [modalError, setModalError] = useState<string | null>(null);
@@ -83,7 +74,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!skillsData) setSkillsLoading(true);
       if (!projectsData) setProjectsLoading(true);
       if (!userData) setUserLoading(true);
-      if (!xpHistoryData) setXpHistoryLoading(true);
 
       try {
         const sData = await fetchData(`/v1/participants/${username}/skills`, token);
@@ -114,13 +104,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         localStorage.setItem('s21_projects_cache', JSON.stringify(combinedData));
         localStorage.setItem('s21_projects_cache_timestamp', new Date().toISOString());
       } catch (err: any) { setProjectsError(err.message); } finally { setProjectsLoading(false); }
-
-      try {
-        const xpData = await fetchData(`/v1/participants/${username}/experience-history`, token);
-        setXpHistoryData(xpData);
-        localStorage.setItem('s21_history_cache', JSON.stringify(xpData));
-        localStorage.setItem('s21_history_cache_timestamp', new Date().toISOString());
-      } catch (err: any) { setXpHistoryError(err.message); } finally { setXpHistoryLoading(false); }
 
       try {
          const uData = await fetchData(`/v1/participants/${username}`, token);
@@ -221,7 +204,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   // We rely on userData.className but don't display it in header anymore
-  const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (xpHistoryLoading && !xpHistoryData) || (projectsLoading && !projectsData);
+  const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (projectsLoading && !projectsData);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 pb-10 transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100">
@@ -292,18 +275,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
         pointsData={pointsData}
         projectsData={projectsData}
         skillsData={skillsData}
-        xpHistoryData={xpHistoryData}
         loading={{
           user: userLoading && !userData,
           projects: projectsLoading && !projectsData,
-          skills: skillsLoading && !skillsData,
-          xp: xpHistoryLoading && !xpHistoryData
+          skills: skillsLoading && !skillsData
         }}
         errors={{
           user: userError,
           projects: projectsError,
-          skills: skillsError,
-          xp: xpHistoryError
+          skills: skillsError
         }}
         onLogout={onLogout}
       />

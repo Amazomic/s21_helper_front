@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { UserProfileCard } from './UserProfileCard';
 import { ProjectsView } from './ProjectsView';
 import { SkillsView } from './SkillsView';
-import { ExperienceHistoryView } from './ExperienceHistoryView';
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -12,18 +11,15 @@ interface UserMenuProps {
   pointsData: any;
   projectsData: any;
   skillsData: any;
-  xpHistoryData: any;
   loading: {
     user: boolean;
     projects: boolean;
     skills: boolean;
-    xp: boolean;
   };
   errors: {
     user: string | null;
     projects: string | null;
     skills: string | null;
-    xp: string | null;
   };
   onLogout: () => void;
 }
@@ -35,7 +31,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   pointsData,
   projectsData,
   skillsData,
-  xpHistoryData,
   loading,
   errors
 }) => {
@@ -108,12 +103,6 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             data={skillsData} 
             isLoading={loading.skills} 
             error={errors.skills} 
-          />
-
-          <ExperienceHistoryView 
-            data={xpHistoryData} 
-            isLoading={loading.xp} 
-            error={errors.xp} 
           />
         </div>
       </div>
