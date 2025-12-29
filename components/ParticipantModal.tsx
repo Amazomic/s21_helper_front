@@ -58,10 +58,10 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
         className="relative bg-white dark:bg-gray-900 rounded-2xl w-full max-w-sm flex flex-col shadow-2xl animate-in zoom-in-95 duration-200 border border-white/20 dark:border-gray-800 ring-1 ring-black/5 overflow-hidden cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Small Top-Left Close Button */}
+        {/* Small Top-Right Close Button */}
         <button 
           onClick={onClose}
-          className="absolute top-3 left-3 p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors z-50"
+          className="absolute top-3 right-3 p-1 rounded-full text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-300 transition-colors z-50"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
