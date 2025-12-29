@@ -30,6 +30,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   const [cacheVersion, setCacheVersion] = useState(0); 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -55,6 +56,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     const handleClickOutside = (event: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
+        setShowCampusDropdown(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -236,17 +238,48 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     </svg>
                   </div>
-                  <select 
-                    value={selectedCampusId} 
-                    onChange={(e) => setSelectedCampusId(e.target.value)}
-                    className={`w-full pl-8 lg:pl-10 pr-6 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white appearance-none cursor-pointer shadow-inner ${campuses.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                  
+                  <button
+                    onClick={() => setShowCampusDropdown(!showCampusDropdown)}
                     disabled={campuses.length === 0}
+                    className={`relative w-full text-left pl-8 lg:pl-10 pr-8 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white cursor-pointer shadow-inner flex items-center ${campuses.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
                   >
-                    <option value="">{campuses.length === 0 ? 'No Campuses' : 'Campus'}</option>
-                    {campuses.map(c => (
-                      <option key={c.id} value={c.id}>{c.shortName}</option>
-                    ))}
-                  </select>
+                    <span className="truncate">
+                      {selectedCampusId 
+                        ? campuses.find(c => c.id === selectedCampusId)?.shortName 
+                        : 'All Campuses'}
+                    </span>
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                      <svg className={`w-3 h-3 text-gray-400 transition-transform duration-200 ${showCampusDropdown ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </div>
+                  </button>
+
+                  {showCampusDropdown && (
+                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl lg:rounded-2xl shadow-xl max-h-60 overflow-hidden animate-in fade-in duration-200">
+                      <div className="p-1 lg:p-2 overflow-y-auto max-h-60 custom-scrollbar">
+                        <button
+                          onClick={() => { setSelectedCampusId(''); setShowCampusDropdown(false); }}
+                          className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-lg lg:rounded-xl transition-all flex items-center justify-between mb-0.5 group ${!selectedCampusId ? 'bg-primary/10' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                        >
+                           <span className={`text-[10px] lg:text-xs font-black truncate ${!selectedCampusId ? 'text-primary' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>All Campuses</span>
+                           {!selectedCampusId && <span className="text-primary text-[10px]">●</span>}
+                        </button>
+                        
+                        {campuses.map(c => (
+                          <button
+                            key={c.id}
+                            onClick={() => { setSelectedCampusId(c.id); setShowCampusDropdown(false); }}
+                            className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-lg lg:rounded-xl transition-all flex items-center justify-between mb-0.5 group ${selectedCampusId === c.id ? 'bg-primary/10' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                          >
+                             <span className={`text-[10px] lg:text-xs font-black truncate ${selectedCampusId === c.id ? 'text-primary' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>{c.shortName}</span>
+                             {selectedCampusId === c.id && <span className="text-primary text-[10px]">●</span>}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Project Search */}
