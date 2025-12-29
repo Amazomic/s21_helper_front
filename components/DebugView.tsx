@@ -72,7 +72,7 @@ const CacheStatusRow = ({ label, cacheKey }: { label: string, cacheKey: string }
       </div>
       <div className="flex items-end justify-between gap-1">
          <span className="text-[9px] text-gray-400 font-mono truncate" title={timestamp ? new Date(timestamp).toLocaleString() : 'Never'}>
-          {timestamp ? new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-'}
+          {timestamp ? new Date(timestamp).toLocaleString([], {month: 'numeric', day: 'numeric', hour: '2-digit', minute:'2-digit'}) : '-'}
         </span>
         <span className={`text-[8px] font-black uppercase tracking-wider ${exists ? 'text-emerald-500' : 'text-red-500'}`}>
           {exists ? 'OK' : 'NO'}
@@ -515,7 +515,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
             </div>
             <DebugRow method="GET" path="/v1/campuses/{campusId}/participants" desc="Participants in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/participants?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Participants'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/participants?')} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/campuses/{campusId}/coalitions" desc="Coalitions in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/coalitions?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Coalitions'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/coalitions?')} isAnyLoading={isAnyLoading} />
-            <DebugRow method="GET" path="/v1/campuses/{campusId}/clusters" desc="Clusters in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/clusters`, 'Campus Clusters'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/clusters')} isAnyLoading={isAnyLoading} />
+            <DebugRow method="GET" path="/v1/campuses/{campusId}/clusters" desc="Clusters in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/clusters/${id}/clusters`, 'Campus Clusters'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/clusters')} isAnyLoading={isAnyLoading} />
           </DebugSection>
 
           <DebugSection title="Others" desc="Utility lookups">
