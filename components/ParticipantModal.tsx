@@ -82,24 +82,27 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
           ) : data ? (
             <div className="flex flex-col items-center gap-3">
               
-              {/* Login Title - Compact */}
-              <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tight text-center">
-                {data.login}
-              </h2>
+              {/* Row 1: Login, Class, Level */}
+              <div className="flex flex-wrap items-center justify-center gap-2 w-full pr-6">
+                  {/* Login Title */}
+                  <h2 className="text-xl font-black text-gray-900 dark:text-white leading-none tracking-tight">
+                    {data.login}
+                  </h2>
 
-              {/* Ultra Compact Stats Row */}
-              <div className="flex flex-wrap justify-center gap-1.5 w-full">
-                 {/* Class */}
-                 <div className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 flex items-center">
+                  {/* Class */}
+                  <div className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-700 flex items-center">
                     <span className="text-[10px] font-black text-gray-700 dark:text-gray-200 leading-none">{data.className || 'N/A'}</span>
-                 </div>
+                  </div>
 
-                 {/* Level */}
-                 <div className="px-2 py-1 bg-primary/5 border border-primary/20 rounded-md flex items-center gap-1">
+                  {/* Level */}
+                  <div className="px-2 py-1 bg-primary/5 border border-primary/20 rounded-md flex items-center gap-1">
                     <span className="text-[10px] font-bold text-gray-400 uppercase leading-none">Lvl</span>
                     <span className="text-[10px] font-black text-primary dark:text-green-400 leading-none">{Math.floor(data.level)}</span>
-                 </div>
+                  </div>
+              </div>
 
+              {/* Row 2: Stats (Coalition, PRP, Coins) */}
+              <div className="flex flex-wrap justify-center gap-1.5 w-full">
                  {/* Coalition */}
                  <div className="px-2 py-1 bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md flex items-center gap-1.5">
                     <span className="text-[10px] font-black text-gray-800 dark:text-white leading-none">{data.coalition ? data.coalition.name : '-'}</span>
