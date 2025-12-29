@@ -5,18 +5,12 @@ import { Card } from './ui/Card';
 interface Project {
   id: number;
   status: string;
-  project: {
-    id: number;
-    name: string;
-    slug: string;
-    parent_id: number | null;
-  };
-  markedAt: string | null;
-  marked_at: string | null;
+  title: string;
+  type?: string;
 }
 
 interface ProjectsViewProps {
-  data: Project[] | null;
+  data: { projects: Project[] } | Project[] | null;
   isLoading: boolean;
   error?: string | null;
 }
@@ -30,12 +24,15 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
   }, []);
 
   const activeProjects = useMemo(() => {
-    if (!data || !Array.isArray(data)) return [];
+    if (!data) return [];
     
-    return data.filter(p => 
+    // Normalize data structure (handle both { projects: [...] } and [...])
+    const list = Array.isArray(data) ? data : (data.projects || []);
+    
+    return list.filter(p => 
       p.status === 'IN_PROGRESS' || 
       p.status === 'IN_REVIEWS' || 
-      p.status === 'WAITING_FOR_CORRECTION' // Часто тоже считается активным
+      p.status === 'WAITING_FOR_CORRECTION'
     );
   }, [data]);
 
@@ -103,10 +100,10 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
             ) : (
                 activeProjects.map((p) => (
                     <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                        <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2">
-                            {p.project.name}
+                        <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2" title={p.title}>
+                            {p.title}
                         </span>
-                        <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)}`}>
+                        <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)} whitespace-nowrap`}>
                             {formatStatus(p.status)}
                         </span>
                     </div>

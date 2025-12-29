@@ -96,10 +96,25 @@ export const Dashboard: React.FC<DashboardProps> = ({
       } catch (err: any) { setSkillsError(err.message); } finally { setSkillsLoading(false); }
 
       try {
-        // Fetch all projects, active filtering is done in the view
-        const pData = await fetchData(`/v1/participants/${username}/projects`, token);
-        setProjectsData(pData);
-        localStorage.setItem('s21_projects_cache', JSON.stringify(pData));
+        // Fetch specific active statuses IN_PROGRESS and IN_REVIEWS in parallel
+        const [progressData, reviewsData] = await Promise.all([
+          fetchData(`/v1/participants/${username}/projects?limit=50&offset=0&status=IN_PROGRESS`, token),
+          fetchData(`/v1/participants/${username}/projects?limit=50&offset=0&status=IN_REVIEWS`, token)
+        ]);
+
+        // Merge the results
+        const mergedProjects = [
+          ...(progressData?.projects || []),
+          ...(reviewsData?.projects || [])
+        ];
+        
+        // Remove duplicates just in case (though unlikely with different status filters)
+        const uniqueProjects = Array.from(new Map(mergedProjects.map((p: any) => [p.id, p])).values());
+        
+        const combinedData = { projects: uniqueProjects };
+        
+        setProjectsData(combinedData);
+        localStorage.setItem('s21_projects_cache', JSON.stringify(combinedData));
         localStorage.setItem('s21_projects_cache_timestamp', new Date().toISOString());
       } catch (err: any) { setProjectsError(err.message); } finally { setProjectsLoading(false); }
 
