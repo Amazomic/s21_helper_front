@@ -1,14 +1,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { fetchData } from '../services/apiService';
-import { Card } from './ui/Card';
 import { ResultModal } from './ResultModal';
-import { SkillsView } from './SkillsView';
-import { ProjectsView } from './ProjectsView';
-import { UserProfileCard } from './UserProfileCard';
-import { ExperienceHistoryView } from './ExperienceHistoryView';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
 import { DebugView } from './DebugView';
+import { UserMenu } from './UserMenu';
 
 interface DashboardProps {
   username: string;
@@ -26,6 +22,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   toggleDarkMode 
 }) => {
   const [debugMode, setDebugMode] = useState(() => localStorage.getItem('s21_debug_enabled') === 'true');
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   
   const [skillsData, setSkillsData] = useState<any>(() => {
     try {
@@ -235,11 +232,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
         )}
         <div className="max-w-7xl mx-auto px-6 py-3 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20">
+          <button 
+            onClick={() => setUserMenuOpen(true)}
+            className="flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl p-1 -ml-1 transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 group-hover:scale-105 transition-transform">
               {username.charAt(0).toUpperCase()}
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col items-start">
               <h1 className="font-semibold text-gray-900 dark:text-white tracking-tight leading-none text-lg">
                 {username}
               </h1>
@@ -247,7 +247,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {headerTitle}
               </p>
             </div>
-          </div>
+          </button>
+          
           <div className="flex items-center gap-2">
              <button onClick={toggleDarkMode} className="p-2 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
                {darkMode ? <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" /></svg> : <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" /></svg>}
@@ -255,40 +256,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
              <button onClick={toggleDebugMode} className={`px-3 py-1.5 rounded-lg text-xs font-black transition-all ${debugMode ? 'bg-amber-600 text-white shadow-lg shadow-amber-600/20' : 'bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300'}`}>
               {debugMode ? 'EXIT DEBUG' : 'DEBUG'}
             </button>
-            <button onClick={onLogout} className="text-gray-400 hover:text-red-500 transition-colors p-2"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg></button>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-12">
         {!debugMode ? (
-          <div className="flex flex-col items-stretch lg:grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-14 lg:items-start animate-in fade-in duration-500">
-            {/* Main Content (Search) - Left Column */}
-            <div className="order-4 w-full lg:col-start-1 lg:row-start-1 lg:order-none space-y-10">
-              <ProjectParticipantsSearch 
+          <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
+             <ProjectParticipantsSearch 
                 token={token} 
                 campusId={userData?.campusId || userData?.campus?.id} 
               />
-            </div>
-
-            {/* Sidebar (Profile, Projects, Skills, History) - Right Column */}
-            <div className="contents lg:flex lg:flex-col lg:gap-6 lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24 lg:h-fit lg:z-10">
-              <div className="order-1 w-full">
-                <UserProfileCard data={userData} points={pointsData} loading={userLoading && !userData} error={userError} />
-              </div>
-
-              <div className="order-2 w-full">
-                <ProjectsView data={projectsData} isLoading={projectsLoading && !projectsData} error={projectsError} />
-              </div>
-
-              <div className="order-3 w-full">
-                <SkillsView data={skillsData} isLoading={skillsLoading && !skillsData} error={skillsError} />
-              </div>
-
-              <div className="order-5 w-full">
-                <ExperienceHistoryView data={xpHistoryData} isLoading={xpHistoryLoading && !xpHistoryData} error={xpHistoryError} />
-              </div>
-            </div>
           </div>
         ) : (
           <DebugView 
@@ -303,6 +281,29 @@ export const Dashboard: React.FC<DashboardProps> = ({
           />
         )}
       </main>
+
+      <UserMenu 
+        isOpen={userMenuOpen}
+        onClose={() => setUserMenuOpen(false)}
+        userData={userData}
+        pointsData={pointsData}
+        projectsData={projectsData}
+        skillsData={skillsData}
+        xpHistoryData={xpHistoryData}
+        loading={{
+          user: userLoading && !userData,
+          projects: projectsLoading && !projectsData,
+          skills: skillsLoading && !skillsData,
+          xp: xpHistoryLoading && !xpHistoryData
+        }}
+        errors={{
+          user: userError,
+          projects: projectsError,
+          skills: skillsError,
+          xp: xpHistoryError
+        }}
+        onLogout={onLogout}
+      />
 
       <ResultModal isOpen={modalOpen} onClose={() => setModalOpen(false)} data={modalData} error={modalError} title={modalTitle} />
       
