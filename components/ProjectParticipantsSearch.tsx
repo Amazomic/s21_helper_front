@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { fetchData } from '../services/apiService';
 import { Button } from './ui/Button';
@@ -16,6 +17,7 @@ interface CachedProject {
 
 export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId }) => {
   const [projectId, setProjectId] = useState('');
+  const [status, setStatus] = useState('IN_REVIEWS');
   const [results, setResults] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,7 +94,10 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     }
 
     try {
-      const query = `/v1/projects/${targetId}/participants?limit=100&offset=0${campusId ? `&campusId=${campusId}` : ''}`;
+      let query = `/v1/projects/${targetId}/participants?limit=100&offset=0`;
+      if (status) query += `&status=${status}`;
+      if (campusId) query += `&campusId=${campusId}`;
+
       const data = await fetchData(query, token);
       
       let list: any[] = [];
@@ -210,6 +215,22 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   </div>
                 )}
             </div>
+
+            <div className="w-full sm:w-48">
+                <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all text-sm appearance-none cursor-pointer"
+                >
+                    <option value="ASSIGNED">Assigned</option>
+                    <option value="REGISTERED">Registered</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="IN_REVIEWS">In Reviews</option>
+                    <option value="ACCEPTED">Accepted</option>
+                    <option value="FAILED">Failed</option>
+                </select>
+            </div>
+
             <Button type="submit" isLoading={isLoading} className="w-full sm:w-auto sm:px-8 bg-primary hover:bg-primary/90">
                 Search
             </Button>
@@ -232,14 +253,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                 Participants <span className="text-primary ml-1">({results.length})</span>
             </h3>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
             {results.map((login, idx) => (
               <button 
                 key={`${idx}-${login}`} 
                 onClick={() => handleViewParticipant(login)}
-                className="flex items-center justify-center p-3 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-primary/50 hover:shadow-md hover:bg-white dark:hover:bg-gray-800 transition-all group"
+                className="flex items-center justify-center p-2 bg-gray-50 dark:bg-gray-900/50 rounded-lg border border-gray-100 dark:border-gray-800 hover:border-primary/50 hover:shadow-md hover:bg-white dark:hover:bg-gray-800 transition-all group"
               >
-                <span className="text-sm font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors truncate">{login}</span>
+                <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-primary transition-colors truncate">{login}</span>
               </button>
             ))}
           </div>
