@@ -4,6 +4,7 @@ import { fetchData } from '../services/apiService';
 import { Card } from './ui/Card';
 import { ResultModal } from './ResultModal';
 import { SkillsView } from './SkillsView';
+import { ProjectsView } from './ProjectsView';
 import { UserProfileCard } from './UserProfileCard';
 import { ExperienceHistoryView } from './ExperienceHistoryView';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
@@ -34,6 +35,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
   });
   const [skillsLoading, setSkillsLoading] = useState(false);
   const [skillsError, setSkillsError] = useState<string | null>(null);
+
+  const [projectsData, setProjectsData] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem('s21_projects_cache');
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+  const [projectsLoading, setProjectsLoading] = useState(false);
+  const [projectsError, setProjectsError] = useState<string | null>(null);
 
   const [userData, setUserData] = useState<any>(() => {
     try {
@@ -74,6 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     const loadData = async () => {
       if (!skillsData) setSkillsLoading(true);
+      if (!projectsData) setProjectsLoading(true);
       if (!userData) setUserLoading(true);
       if (!xpHistoryData) setXpHistoryLoading(true);
 
@@ -83,6 +94,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
         localStorage.setItem('s21_skills_cache', JSON.stringify(sData));
         localStorage.setItem('s21_skills_cache_timestamp', new Date().toISOString());
       } catch (err: any) { setSkillsError(err.message); } finally { setSkillsLoading(false); }
+
+      try {
+        // Fetch all projects, active filtering is done in the view
+        const pData = await fetchData(`/v1/participants/${username}/projects`, token);
+        setProjectsData(pData);
+        localStorage.setItem('s21_projects_cache', JSON.stringify(pData));
+        localStorage.setItem('s21_projects_cache_timestamp', new Date().toISOString());
+      } catch (err: any) { setProjectsError(err.message); } finally { setProjectsLoading(false); }
 
       try {
         const xpData = await fetchData(`/v1/participants/${username}/experience-history`, token);
@@ -190,7 +209,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   const headerTitle = userData?.className || 'Portal';
-  const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (xpHistoryLoading && !xpHistoryData);
+  const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (xpHistoryLoading && !xpHistoryData) || (projectsLoading && !projectsData);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 pb-10 transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100">
@@ -229,26 +248,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-6 py-12">
         {!debugMode ? (
           <div className="flex flex-col items-stretch lg:grid lg:grid-cols-[1fr_380px] gap-10 lg:gap-14 lg:items-start animate-in fade-in duration-500">
-            {/* 1. Profile Block */}
+            {/* 1. Profile Block (Sticky) */}
             <div className="order-1 w-full lg:col-start-2 lg:row-start-1 lg:sticky lg:top-24 z-10">
               <UserProfileCard data={userData} points={pointsData} loading={userLoading && !userData} error={userError} />
             </div>
 
-            {/* 2. Skills Block */}
+            {/* 2. Active Projects Block (Sticky, below Profile) */}
             <div className="order-2 w-full lg:col-start-2 lg:row-start-2 lg:sticky lg:top-[280px]">
+              <ProjectsView data={projectsData} isLoading={projectsLoading && !projectsData} error={projectsError} />
+            </div>
+
+            {/* 3. Skills Block (Sticky, below Projects) */}
+            <div className="order-3 w-full lg:col-start-2 lg:row-start-3 lg:sticky lg:top-[400px]">
               <SkillsView data={skillsData} isLoading={skillsLoading && !skillsData} error={skillsError} />
             </div>
 
-            {/* 3. Central Column: Project Search */}
-            <div className="order-3 w-full lg:col-start-1 lg:row-start-1 lg:row-span-3 space-y-10">
+            {/* 4. Central Column: Project Search (Main Content) */}
+            <div className="order-4 w-full lg:col-start-1 lg:row-start-1 lg:row-span-4 space-y-10">
               <ProjectParticipantsSearch 
                 token={token} 
                 campusId={userData?.campusId || userData?.campus?.id} 
               />
             </div>
 
-            {/* 4. Experience History */}
-            <div className="order-4 w-full lg:col-start-2 lg:row-start-3 lg:sticky lg:top-[480px]">
+            {/* 5. Experience History (Sticky, bottom right) */}
+            <div className="order-5 w-full lg:col-start-2 lg:row-start-4 lg:sticky lg:top-[600px]">
               <ExperienceHistoryView data={xpHistoryData} isLoading={xpHistoryLoading && !xpHistoryData} error={xpHistoryError} />
             </div>
           </div>

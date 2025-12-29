@@ -260,6 +260,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
             <CacheStatusRow label="Auth Session" cacheKey="s21_auth_token" />
             <CacheStatusRow label="Profile Data" cacheKey="s21_profile_cache" />
+            <CacheStatusRow label="Projects" cacheKey="s21_projects_cache" />
             <CacheStatusRow label="Points Data" cacheKey="s21_points_cache" />
             <CacheStatusRow label="Skills Data" cacheKey="s21_skills_cache" />
             <CacheStatusRow label="XP History" cacheKey="s21_history_cache" />

@@ -1,0 +1,119 @@
+
+import React, { useMemo, useState, useEffect } from 'react';
+import { Card } from './ui/Card';
+
+interface Project {
+  id: number;
+  status: string;
+  project: {
+    id: number;
+    name: string;
+    slug: string;
+    parent_id: number | null;
+  };
+  markedAt: string | null;
+  marked_at: string | null;
+}
+
+interface ProjectsViewProps {
+  data: Project[] | null;
+  isLoading: boolean;
+  error?: string | null;
+}
+
+export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, error }) => {
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024;
+    setIsCollapsed(isMobile);
+  }, []);
+
+  const activeProjects = useMemo(() => {
+    if (!data || !Array.isArray(data)) return [];
+    
+    return data.filter(p => 
+      p.status === 'IN_PROGRESS' || 
+      p.status === 'IN_REVIEWS' || 
+      p.status === 'WAITING_FOR_CORRECTION' // Часто тоже считается активным
+    );
+  }, [data]);
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'IN_PROGRESS': return 'text-blue-500 bg-blue-500/10 border-blue-500/20';
+      case 'IN_REVIEWS': return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+      case 'WAITING_FOR_CORRECTION': return 'text-red-400 bg-red-500/10 border-red-500/20';
+      default: return 'text-gray-500 bg-gray-500/10 border-gray-500/20';
+    }
+  };
+
+  const formatStatus = (status: string) => {
+    return status.replace(/_/g, ' ');
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="h-24 animate-pulse rounded-3xl">
+        <div className="flex justify-between items-center mb-4">
+            <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="h-2 w-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
+        </div>
+        <div className="h-10 bg-gray-100 dark:bg-gray-700 rounded opacity-50"></div>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="h-24 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl">
+        <p className="text-[9px] font-black uppercase">Projects Error</p>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="flex flex-col shadow-2xl border-none overflow-hidden rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
+      <button 
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
+      >
+         <div className="flex items-baseline gap-2.5">
+            <h3 className="font-black text-gray-800 dark:text-white text-[10px] lg:text-xs uppercase tracking-[0.2em] group-hover:text-primary transition-colors duration-300">
+                Active Projects
+            </h3>
+            <span className={`text-[9px] lg:text-[10px] font-bold transition-colors ${activeProjects.length > 0 ? 'text-primary dark:text-green-400' : 'text-gray-400'}`}>
+                ({activeProjects.length})
+            </span>
+         </div>
+         
+         <div className={`text-gray-300 dark:text-gray-600 group-hover:text-primary transition-all duration-500 transform ${isCollapsed ? 'rotate-0' : '-rotate-180'}`}>
+            <svg className="w-4 h-4 lg:w-5 lg:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+            </svg>
+         </div>
+      </button>
+      
+      <div className={`transition-all duration-500 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
+        <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
+            {activeProjects.length === 0 ? (
+                <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                    No active projects
+                </div>
+            ) : (
+                activeProjects.map((p) => (
+                    <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                        <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2">
+                            {p.project.name}
+                        </span>
+                        <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)}`}>
+                            {formatStatus(p.status)}
+                        </span>
+                    </div>
+                ))
+            )}
+        </div>
+      </div>
+    </div>
+  );
+};
