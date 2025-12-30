@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { loginUser, fetchTelegramSettings, linkTelegramAccount } from '../services/apiService';
+import { loginUser } from '../services/apiService';
 import { Button } from './ui/Button';
 import { AuthResponse } from '../types';
 
@@ -27,21 +27,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       // 1. Authenticate with School 21
       const data = await loginUser(normalizedUsername, password);
 
-      // 2. Auto-link to Telegram if inside WebApp
-      // We check if already linked first, although POST /link is likely idempotent on backend
-      if (window.Telegram?.WebApp?.initData) {
-        try {
-           const settings = await fetchTelegramSettings(data.access_token);
-           if (!settings.isLinked) {
-              // Send ONLY the token. Backend validates it and binds to Telegram ID from initData header.
-              await linkTelegramAccount(data.access_token);
-           }
-        } catch (linkErr: any) {
-           console.error("Auto-link failed", linkErr);
-           // Show alert so user can tell us what the error is (e.g. 403 Forbidden body)
-           alert(`Telegram Link Failed: ${linkErr.message}`);
-        }
-      }
+      // NOTE: Auto-linking removed to allow manual diagnostics of 403 errors via the Dashboard widget.
       
       onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchData, fetchTelegramSettings, linkTelegramAccount } from '../services/apiService';
+import { fetchData, fetchTelegramSettings } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
 import { TelegramStatusWidget } from './TelegramStatusWidget';
@@ -86,23 +86,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!userData) setUserLoading(true);
       if (!telegramConfig) setTelegramLoading(true);
 
-      // Fetch Telegram Settings & Handle Auto-Link
+      // Fetch Telegram Settings
       try {
-        let tgSettings = await fetchTelegramSettings(token);
-        
-        // Auto-Link Logic: If NOT linked but inside Telegram, try to link now
-        const isTgWebApp = !!window.Telegram?.WebApp?.initData;
-        
-        if (!tgSettings.isLinked && isTgWebApp) {
-           try {
-             await linkTelegramAccount(token);
-             // Re-fetch settings after linking
-             tgSettings = await fetchTelegramSettings(token);
-           } catch (linkErr) {
-             // Silent fail
-           }
-        }
-
+        const tgSettings = await fetchTelegramSettings(token);
         setTelegramConfig(tgSettings);
         localStorage.setItem('s21_telegram_config', JSON.stringify(tgSettings));
       } catch (e) {
@@ -289,15 +275,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
           <div className="max-w-5xl mx-auto animate-in fade-in duration-500">
-             {/* 
-                LAYOUT CHANGE: 
-                Mobile: Flex column. Widget is FIRST (top), Search is SECOND (bottom).
-                Desktop: Grid 3 cols. Search is LEFT (2 cols), Widget is RIGHT (1 col).
-             */}
              <div className="flex flex-col gap-6 items-start lg:grid lg:grid-cols-3">
                
                {/* Telegram Status Widget */}
-               {/* Mobile: default order (first). Desktop: order-last (right side) */}
                <div className="w-full lg:col-span-1 lg:order-last">
                  <TelegramStatusWidget 
                    config={telegramConfig} 
@@ -306,7 +286,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                </div>
 
                {/* Project Search */}
-               {/* Mobile: default order (second). Desktop: order-first (left side) */}
                <div className="w-full lg:col-span-2">
                  <ProjectParticipantsSearch 
                     token={token} 

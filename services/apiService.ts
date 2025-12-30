@@ -112,7 +112,7 @@ export const fetchData = async (endpoint: string, token: string | null, options:
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`API Error on ${endpoint}:`, response.status, errorText);
-    throw new Error(`API Error ${response.status}: ${errorText}`);
+    throw new Error(`${response.status}: ${errorText}`);
   }
 
   const text = await response.text();
@@ -155,27 +155,15 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
   }
 };
 
-// New flow: Use direct fetch to ensure NO Authorization header is sent
-// We only want x-telegram-init-data and the body payload.
+// We pass schoolToken in body, but keep Auth header NULL to prevent conflict.
+// fetchData will attach x-telegram-init-data automatically.
 export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
-  const initData = getTelegramInitData();
-  
-  const response = await fetch(`${API_BASE}/v1/telegram/link`, {
+  await fetchData('/v1/telegram/link', null, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-telegram-init-data': initData
-    },
     body: JSON.stringify({ 
       school_token: schoolToken 
     })
   });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`Link Error:`, response.status, errorText);
-    throw new Error(`${response.status}: ${errorText}`);
-  }
 };
 
 export const updateTelegramVisibility = async (token: string, visibility: TelegramVisibility): Promise<TelegramConfig> => {
