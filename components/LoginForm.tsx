@@ -27,20 +27,28 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     try {
       // 1. Authenticate with School 21
       const data = await loginUser(normalizedUsername, password);
+      
+      // PRE-SEED LocalStorage to prevent session loss if auto-link returns 401
+      localStorage.setItem('s21_auth_token', data.access_token);
+      localStorage.setItem('s21_refresh_token', data.refresh_token);
 
       // 2. Auto-Link Telegram if we are in the Telegram WebApp environment
       if (window.Telegram?.WebApp?.initData) {
          try {
            await linkTelegramAccount(data.access_token);
          } catch (linkError) {
-           console.error("Auto-link failed (non-fatal):", linkError);
-           // We do not block login if linking fails, but we log it.
+           console.warn("Auto-link failed (non-fatal):", linkError);
+           // We do not block login if linking fails.
+           // User can manually link from Dashboard.
          }
       }
       
       onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {
       setError(err.message || 'Login failed');
+      // Cleanup on fail
+      localStorage.removeItem('s21_auth_token');
+      localStorage.removeItem('s21_refresh_token');
     } finally {
       setLoading(false);
     }

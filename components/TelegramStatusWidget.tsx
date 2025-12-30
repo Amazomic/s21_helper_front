@@ -1,8 +1,9 @@
 
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
+import { Button } from './ui/Button';
 import { TelegramConfig, TelegramVisibility } from '../types';
-import { updateTelegramVisibility, unlinkTelegramAccount } from '../services/apiService';
+import { updateTelegramVisibility, unlinkTelegramAccount, linkTelegramAccount, fetchTelegramSettings } from '../services/apiService';
 
 interface TelegramStatusWidgetProps {
   config: TelegramConfig | null;
@@ -17,6 +18,26 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   // Telegram WebApp Data
   const tgWebApp = window.Telegram?.WebApp;
   const isTelegramContext = !!tgWebApp?.initData;
+
+  const handleLink = async () => {
+    if (!isTelegramContext) {
+      alert("Please open this app inside Telegram to link your account.");
+      return;
+    }
+    
+    setIsUpdating(true);
+    try {
+      await linkTelegramAccount(token);
+      // Fetch fresh settings to confirm link
+      const newConfig = await fetchTelegramSettings(token);
+      onUpdateConfig(newConfig);
+    } catch (e: any) {
+      console.error("Link failed", e);
+      alert("Failed to link Telegram account. Please try again.");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const changeVisibility = async (vis: TelegramVisibility) => {
     setIsUpdating(true);
@@ -81,11 +102,20 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
       <div className="p-4">
          {/* NOT LINKED STATE */}
          {!isLinked && (
-            <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-4 py-2">
                   <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                     Account not linked. 
-                     {!isTelegramContext && " Open this app in Telegram to link."}
+                     Link your Telegram account to allow other students to find and contact you easily.
+                     {!isTelegramContext && <span className="block mt-1 text-red-400 opacity-80">(Open this app in Telegram to link)</span>}
                   </p>
+                  
+                  <Button 
+                    onClick={handleLink} 
+                    isLoading={isUpdating} 
+                    disabled={!isTelegramContext}
+                    className="w-full text-xs py-2.5 font-bold uppercase tracking-wide shadow-lg shadow-primary/20"
+                  >
+                    Connect Telegram
+                  </Button>
             </div>
          )}
 
