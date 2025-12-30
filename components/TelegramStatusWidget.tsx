@@ -16,16 +16,20 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   // Telegram WebApp Data
   const tgWebApp = window.Telegram?.WebApp;
-  const rawInitData = tgWebApp?.initData;
-  const isTelegramContext = !!rawInitData;
+  const isTelegramContext = !!tgWebApp?.initData;
 
   const changeVisibility = async (vis: TelegramVisibility) => {
     setIsUpdating(true);
     try {
-      const newConfig = await updateTelegramVisibility(token, vis);
-      onUpdateConfig(newConfig);
+      // Optimistic update
+      onUpdateConfig({
+        ...config!,
+        visibility: vis
+      });
+      await updateTelegramVisibility(token, vis);
     } catch (e) {
        console.error("Failed to update visibility", e);
+       // Revert on failure (needs fetch)
     } finally {
       setIsUpdating(false);
     }
@@ -57,6 +61,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   }
 
   const isLinked = config?.isLinked;
+  const visibility = config?.visibility || 'public'; 
 
   return (
     <Card className="shadow-2xl border-none rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all">
@@ -77,15 +82,10 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
       <div className="p-4">
          {!isLinked ? (
             <div className="flex flex-col gap-3 py-2">
-               {isTelegramContext ? (
                   <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                     Account not linked. It should link automatically upon login.
+                     Account not linked. 
+                     {!isTelegramContext && " Open this app in Telegram to link."}
                   </p>
-               ) : (
-                  <p className="text-[10px] text-gray-400 italic text-center">
-                     Open this app in Telegram to link your account.
-                  </p>
-               )}
             </div>
          ) : (
             <div className="space-y-4">
@@ -97,7 +97,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                          {config?.telegramUsername ? `@${config.telegramUsername}` : (config?.telegramId ? `ID: ${config.telegramId}` : 'Telegram User')}
                      </span>
                   </div>
-                  {/* Unlink Action - Kept minimal as per request for "no button", using text link style */}
                   <button onClick={handleUnlink} disabled={isUpdating} className="text-[8px] font-bold text-red-400 hover:text-red-500 underline opacity-60 hover:opacity-100 transition-opacity">
                       Unlink
                   </button>
@@ -108,45 +107,45 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                    <span className="text-[8px] font-bold text-gray-400 uppercase ml-1 block mb-1">Privacy & Contact</span>
                    
                    {/* Option 1: Public */}
-                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'public' ? 'bg-primary/5 border-primary/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${visibility === 'public' ? 'bg-primary/5 border-primary/30' : 'bg-transparent border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
                        <div className="flex items-center gap-3">
-                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'public' ? 'border-primary bg-primary' : 'border-gray-300 dark:border-gray-600'}`}>
-                               {config?.visibility === 'public' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${visibility === 'public' ? 'border-primary bg-primary' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {visibility === 'public' && <div className="w-1 h-1 rounded-full bg-white"></div>}
                            </div>
                            <div className="flex flex-col">
                                <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Public</span>
                                <span className="text-[8px] text-gray-500 dark:text-gray-400">Show username, allow DM</span>
                            </div>
                        </div>
-                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'public'} onChange={() => changeVisibility('public')} disabled={isUpdating} />
+                       <input type="radio" name="visibility" className="hidden" checked={visibility === 'public'} onChange={() => changeVisibility('public')} disabled={isUpdating} />
                    </label>
 
                    {/* Option 2: Notify Only */}
-                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'notify_only' ? 'bg-amber-500/5 border-amber-500/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${visibility === 'notify_only' ? 'bg-amber-500/5 border-amber-500/30' : 'bg-transparent border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
                        <div className="flex items-center gap-3">
-                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'notify_only' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                               {config?.visibility === 'notify_only' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${visibility === 'notify_only' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {visibility === 'notify_only' && <div className="w-1 h-1 rounded-full bg-white"></div>}
                            </div>
                            <div className="flex flex-col">
                                <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Notify Only</span>
                                <span className="text-[8px] text-gray-500 dark:text-gray-400">Hide username, bot notify</span>
                            </div>
                        </div>
-                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'notify_only'} onChange={() => changeVisibility('notify_only')} disabled={isUpdating} />
+                       <input type="radio" name="visibility" className="hidden" checked={visibility === 'notify_only'} onChange={() => changeVisibility('notify_only')} disabled={isUpdating} />
                    </label>
 
                    {/* Option 3: Private */}
-                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'private' ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${visibility === 'private' ? 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700' : 'bg-transparent border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
                        <div className="flex items-center gap-3">
-                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'private' ? 'border-gray-500 bg-gray-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                               {config?.visibility === 'private' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${visibility === 'private' ? 'border-gray-500 bg-gray-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {visibility === 'private' && <div className="w-1 h-1 rounded-full bg-white"></div>}
                            </div>
                            <div className="flex flex-col">
                                <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Private</span>
                                <span className="text-[8px] text-gray-500 dark:text-gray-400">Hidden</span>
                            </div>
                        </div>
-                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'private'} onChange={() => changeVisibility('private')} disabled={isUpdating} />
+                       <input type="radio" name="visibility" className="hidden" checked={visibility === 'private'} onChange={() => changeVisibility('private')} disabled={isUpdating} />
                    </label>
                </div>
             </div>

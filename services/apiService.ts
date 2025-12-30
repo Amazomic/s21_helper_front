@@ -56,7 +56,8 @@ export const fetchData = async (endpoint: string, token: string | null, options:
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    if (currentToken) {
+    // Only attach Authorization if we have a real token (not a placeholder)
+    if (currentToken && currentToken !== 'telegram-session') {
       headers['Authorization'] = `Bearer ${currentToken}`;
     }
     
@@ -76,7 +77,7 @@ export const fetchData = async (endpoint: string, token: string | null, options:
   // Global Interceptor Logic for 401
   if (response.status === 401) {
     // If we are relying solely on Telegram Init Data (no token), 401 means backend rejected InitData or session
-    if (!token && initData) {
+    if ((!token || token === 'telegram-session') && initData) {
        console.log("Backend rejected Telegram Session (401)");
        throw new Error('Telegram Session Expired');
     }
@@ -127,16 +128,9 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 
 // --- Telegram Specific Endpoints ---
 
-// Optional token, because we might call this with just InitData at app start
 export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
-  // CRITICAL FIX: Do not attempt to fetch settings if not in Telegram (no initData).
-  // This prevents 401 Unauthorized errors on the Web version.
-  if (!window.Telegram?.WebApp?.initData) {
-    return { isLinked: false, visibility: 'private' };
-  }
-
   try {
-    // Headers are handled in fetchData, including x-telegram-init-data
+    // Allow fetching settings even without initData (for Web view of linked account)
     const data = await fetchData('/v1/telegram/settings', token || null);
     
     return {
@@ -152,7 +146,7 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
     if (e.message && e.message.includes('404')) {
         return { isLinked: false, visibility: 'private' };
     }
-    console.error("Failed to fetch telegram settings:", e);
+    console.warn("Failed to fetch telegram settings:", e);
     return { isLinked: false, visibility: 'private' };
   }
 };
