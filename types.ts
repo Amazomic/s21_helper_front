@@ -22,7 +22,7 @@ export interface UserState {
   token: string | null;
 }
 
-export type TelegramVisibility = 'public' | 'request_only' | 'private';
+export type TelegramVisibility = 'public' | 'notify_only' | 'private';
 
 export interface TelegramConfig {
   isLinked: boolean;
@@ -31,4 +31,11 @@ export interface TelegramConfig {
   schoolLogin?: string;
   visibility: TelegramVisibility;
   linkedAt?: string;
+}
+
+export interface PeerTelegramInfo {
+  found: boolean;
+  can_message?: boolean;
+  can_notify?: boolean;
+  telegram_username?: string;
 }

@@ -132,24 +132,24 @@ export const TelegramSettings: React.FC<TelegramSettingsProps> = ({ token, confi
                             </div>
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Public</span>
-                                <span className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Show my username to everyone</span>
+                                <span className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Show my username, allow messages</span>
                             </div>
                         </div>
                         <input type="radio" name="visibility" className="hidden" checked={config.visibility === 'public'} onChange={() => changeVisibility('public')} disabled={isLoading} />
                     </label>
 
-                    {/* Option 2: Request Only */}
-                    <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${config.visibility === 'request_only' ? 'bg-amber-500/5 border-amber-500/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                    {/* Option 2: Notify Only (Formerly Request Only) */}
+                    <label className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${config.visibility === 'notify_only' ? 'bg-amber-500/5 border-amber-500/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
                         <div className="flex items-center gap-3">
-                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${config.visibility === 'request_only' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
-                                {config.visibility === 'request_only' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
+                            <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${config.visibility === 'notify_only' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                                {config.visibility === 'notify_only' && <div className="w-1.5 h-1.5 rounded-full bg-white"></div>}
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Requests Only</span>
-                                <span className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Hide username, allow contact requests via bot</span>
+                                <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Notify Only</span>
+                                <span className="text-[9px] text-gray-500 dark:text-gray-400 leading-tight">Hide username, allow notifications via Bot</span>
                             </div>
                         </div>
-                        <input type="radio" name="visibility" className="hidden" checked={config.visibility === 'request_only'} onChange={() => changeVisibility('request_only')} disabled={isLoading} />
+                        <input type="radio" name="visibility" className="hidden" checked={config.visibility === 'notify_only'} onChange={() => changeVisibility('notify_only')} disabled={isLoading} />
                     </label>
 
                     {/* Option 3: Private */}

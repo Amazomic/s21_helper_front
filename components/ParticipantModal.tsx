@@ -1,6 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/Button';
+import { getPeerTelegramInfo, notifyPeer } from '../services/apiService';
+import { PeerTelegramInfo } from '../types';
 
 interface Project {
   id: number;
@@ -29,10 +31,47 @@ interface ParticipantModalProps {
   data: ParticipantData | null;
   isLoading: boolean;
   error: string | null;
+  token?: string;
 }
 
-export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onClose, data, isLoading, error }) => {
+export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onClose, data, isLoading, error, token = null }) => {
   const [isProjectsCollapsed, setIsProjectsCollapsed] = useState(true);
+  
+  // Peer Interaction State
+  const [peerInfo, setPeerInfo] = useState<PeerTelegramInfo | null>(null);
+  const [loadingPeer, setLoadingPeer] = useState(false);
+  const [notifyLoading, setNotifyLoading] = useState(false);
+  const [notifyStatus, setNotifyStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  useEffect(() => {
+    if (isOpen && data?.login) {
+       // Reset state
+       setPeerInfo(null);
+       setNotifyStatus('idle');
+       setLoadingPeer(true);
+
+       // Check peer availability
+       getPeerTelegramInfo(data.login, token)
+         .then(info => setPeerInfo(info))
+         .catch(() => setPeerInfo({ found: false }))
+         .finally(() => setLoadingPeer(false));
+    }
+  }, [isOpen, data?.login, token]);
+
+  const handleNotify = async () => {
+    if (!data?.login) return;
+    setNotifyLoading(true);
+    setNotifyStatus('idle');
+    try {
+       await notifyPeer(data.login, token);
+       setNotifyStatus('success');
+    } catch (e) {
+       console.error(e);
+       setNotifyStatus('error');
+    } finally {
+       setNotifyLoading(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -133,6 +172,40 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                     <span className="text-[10px] font-bold text-amber-500/70 uppercase leading-none">Coin</span>
                  </div>
               </div>
+
+              {/* Telegram Contact Actions */}
+              {!loadingPeer && peerInfo?.found && (
+                <div className="w-full mt-1">
+                    {peerInfo.can_message && peerInfo.telegram_username ? (
+                         <a 
+                           href={`https://t.me/${peerInfo.telegram_username}`} 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           className="flex w-full items-center justify-center gap-2 py-2.5 rounded-xl bg-sky-500 text-white font-bold text-xs uppercase tracking-wide hover:bg-sky-600 active:scale-95 transition-all shadow-md shadow-sky-500/20"
+                         >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
+                            </svg>
+                            Message in Telegram
+                         </a>
+                    ) : peerInfo.can_notify ? (
+                         <Button 
+                           onClick={handleNotify} 
+                           isLoading={notifyLoading}
+                           disabled={notifyStatus === 'success'}
+                           className={`w-full py-2.5 text-xs uppercase tracking-wide ${notifyStatus === 'success' ? 'bg-emerald-500 hover:bg-emerald-600 text-white' : 'bg-gray-800 text-white dark:bg-white dark:text-gray-900'}`}
+                         >
+                            {notifyStatus === 'success' ? 'Notification Sent!' : notifyStatus === 'error' ? 'Failed to Notify' : 'Notify via Bot'}
+                         </Button>
+                    ) : null}
+                    
+                    {notifyStatus === 'success' && (
+                        <p className="text-[9px] text-emerald-500 text-center font-bold mt-1 animate-in fade-in">
+                           The bot has sent a message to {data.login}.
+                        </p>
+                    )}
+                </div>
+              )}
 
               {/* Projects Block */}
               <div className="w-full flex flex-col bg-gray-50 dark:bg-gray-800/30 border border-gray-100 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-300 mt-1">

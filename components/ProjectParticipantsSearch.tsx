@@ -433,6 +433,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
         data={modalData}
         isLoading={modalLoading}
         error={modalError}
+        token={token}
       />
     </>
   );

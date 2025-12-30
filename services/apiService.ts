@@ -1,5 +1,5 @@
 
-import { AuthResponse, TelegramConfig, TelegramVisibility } from '../types';
+import { AuthResponse, TelegramConfig, TelegramVisibility, PeerTelegramInfo } from '../types';
 
 const AUTH_ENDPOINT = '/auth-proxy/auth/realms/EduPowerKeycloak/protocol/openid-connect/token';
 const API_BASE = '/api-proxy';
@@ -182,5 +182,23 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
 export const unlinkTelegramAccount = async (token: string): Promise<void> => {
   await fetchData('/v1/telegram/link', token, {
     method: 'DELETE'
+  });
+};
+
+// --- Peer Interaction ---
+
+export const getPeerTelegramInfo = async (login: string, token: string | null): Promise<PeerTelegramInfo> => {
+  try {
+    return await fetchData(`/v1/telegram/peer/${login}`, token);
+  } catch (e) {
+    console.error(`Failed to fetch peer info for ${login}`, e);
+    return { found: false };
+  }
+};
+
+export const notifyPeer = async (targetLogin: string, token: string | null): Promise<void> => {
+  await fetchData('/v1/telegram/notify', token, {
+    method: 'POST',
+    body: JSON.stringify({ target_login: targetLogin })
   });
 };
