@@ -2,6 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import { Card } from './ui/Card';
 import { TelegramConfig, TelegramVisibility } from '../types';
+import { linkTelegramAccount, fetchTelegramSettings } from '../services/apiService';
 
 interface TelegramStatusWidgetProps {
   config: TelegramConfig | null;
@@ -12,6 +13,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   // Local state for UI toggles (placeholders for now)
   const [allowNotifications, setAllowNotifications] = useState(true);
   const [visibility, setVisibility] = useState<TelegramVisibility>(config?.visibility || 'private');
+  const [isLinking, setIsLinking] = useState(false);
 
   // Telegram WebApp Data
   const tgWebApp = window.Telegram?.WebApp;
@@ -26,6 +28,24 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
     if (!currentTgId) return false; // If not in TG, can't verify mismatch
     return config.telegramId !== currentTgId;
   }, [config, tgUser]);
+
+  const handleManualLink = async () => {
+     setIsLinking(true);
+     try {
+        const token = localStorage.getItem('s21_auth_token');
+        if (token) {
+           await linkTelegramAccount(token);
+           // We can't easily update parent state from here without a callback, 
+           // but we can reload the page or just let the user know.
+           // Ideally, we would have an onUpdate prop, but sticking to minimal changes:
+           window.location.reload(); 
+        }
+     } catch (e) {
+        alert("Failed to link: " + e);
+     } finally {
+        setIsLinking(false);
+     }
+  };
 
   if (loading) {
     return (
@@ -65,8 +85,8 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
         {/* Content */}
         {!isLinked ? (
-          <div className="py-6 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
-             <div className="mb-2 text-gray-300 dark:text-gray-600">
+          <div className="py-4 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center gap-2">
+             <div className="text-gray-300 dark:text-gray-600">
                 <svg className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
@@ -74,6 +94,16 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                No account connected
              </p>
+             
+             {rawInitData && (
+                <button 
+                  onClick={handleManualLink}
+                  disabled={isLinking}
+                  className="mt-1 px-4 py-2 bg-primary text-white text-[10px] font-bold rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-50"
+                >
+                   {isLinking ? 'Linking...' : 'Connect Telegram'}
+                </button>
+             )}
           </div>
         ) : (
           <div className="space-y-4">

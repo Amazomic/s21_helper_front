@@ -133,7 +133,6 @@ const getTelegramInitData = () => {
 // Optional token, because we might call this with just InitData at app start
 export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
   try {
-    const initData = getTelegramInitData();
     // Headers are handled in fetchData, including x-telegram-init-data
     const data = await fetchData('/v1/telegram/settings', token || null);
     
@@ -157,9 +156,12 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
 
 // New flow: Pass school token in body
 export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
-  const initData = getTelegramInitData();
+  // IMPORTANT: Pass null as the token to fetchData.
+  // We do NOT want the Authorization: Bearer header here, because 
+  // the backend might reject it for unlinked accounts or get confused.
+  // We strictly use x-telegram-init-data (header) + school_token (body).
   
-  await fetchData('/v1/telegram/link', schoolToken, {
+  await fetchData('/v1/telegram/link', null, {
     method: 'POST',
     body: JSON.stringify({ 
       school_token: schoolToken 
@@ -168,7 +170,6 @@ export const linkTelegramAccount = async (schoolToken: string): Promise<void> =>
 };
 
 export const updateTelegramVisibility = async (token: string, visibility: TelegramVisibility): Promise<TelegramConfig> => {
-  const initData = getTelegramInitData();
   await fetchData('/v1/telegram/settings', token, {
     method: 'PUT',
     body: JSON.stringify({ visibility })
