@@ -1,9 +1,9 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { Card } from './ui/Card';
 import { Button } from './ui/Button';
-import { TelegramConfig, TelegramVisibility } from '../types';
-import { linkTelegramAccount, fetchTelegramSettings } from '../services/apiService';
+import { TelegramConfig } from '../types';
+import { linkTelegramAccount } from '../services/apiService';
 
 interface TelegramStatusWidgetProps {
   config: TelegramConfig | null;
@@ -17,8 +17,12 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   // Telegram WebApp Data
   const tgWebApp = window.Telegram?.WebApp;
   const rawInitData = tgWebApp?.initData;
+  // If rawInitData is empty string or undefined, we are NOT in Telegram (or session is invalid)
+  const isTelegramContext = !!rawInitData;
 
   const handleManualLink = async () => {
+     if (!isTelegramContext) return;
+
      setIsLinking(true);
      setLinkError(null);
      try {
@@ -31,22 +35,9 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
            setLinkError("No School Token found. Relogin.");
         }
      } catch (e: any) {
-        // Display the specific error from the API (e.g., "403: {"error":"..."}")
         setLinkError(e.message || "Unknown Error");
      } finally {
         setIsLinking(false);
-     }
-  };
-
-  const copyDebugInfo = () => {
-     if (rawInitData) {
-        const token = localStorage.getItem('s21_auth_token') || '';
-        const debugString = `InitData: ${rawInitData.substring(0, 20)}...\nTokenLen: ${token.length}`;
-        navigator.clipboard.writeText(rawInitData).then(() => {
-          alert(`Copied InitData to clipboard!\n\n${debugString}`);
-        });
-     } else {
-       alert("No InitData found. Are you in Telegram?");
      }
   };
 
@@ -83,42 +74,40 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
       <div className="p-4 space-y-4">
          {!isLinked ? (
             <div className="flex flex-col gap-3">
-               <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                  Link your account to receive notifications and quick access.
-               </p>
-               
-               {linkError && (
-                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 p-2 rounded-lg break-words">
-                   <p className="text-[9px] font-mono text-red-600 dark:text-red-400 leading-tight">{linkError}</p>
-                 </div>
-               )}
+               {isTelegramContext ? (
+                  <>
+                     <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+                        Link your account to receive notifications and quick access.
+                     </p>
+                     
+                     {linkError && (
+                       <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 p-2 rounded-lg break-words">
+                         <p className="text-[9px] font-mono text-red-600 dark:text-red-400 leading-tight">{linkError}</p>
+                       </div>
+                     )}
 
-               <div className="flex gap-2">
-                 <Button 
-                    onClick={handleManualLink} 
-                    isLoading={isLinking}
-                    className="py-2 text-xs flex-1"
-                 >
-                    Connect Telegram
-                 </Button>
-                 
-                 <button 
-                    onClick={copyDebugInfo}
-                    className="px-3 py-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
-                    title="Copy Debug Info (InitData)"
-                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                 </button>
-               </div>
+                     <Button 
+                        onClick={handleManualLink} 
+                        isLoading={isLinking}
+                        className="py-2 text-xs"
+                     >
+                        Connect Telegram
+                     </Button>
+                  </>
+               ) : (
+                  <div className="flex flex-col items-center justify-center py-2 opacity-50">
+                     <p className="text-[10px] text-gray-400 italic text-center">
+                        Open this app in Telegram to link your account.
+                     </p>
+                  </div>
+               )}
             </div>
          ) : (
             <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
                <div className="flex flex-col">
                   <span className="text-[8px] font-bold text-gray-400 uppercase">Connected as</span>
                   <span className="text-[11px] font-black text-gray-800 dark:text-gray-200">
-                      {config?.telegramUsername ? `@${config.telegramUsername}` : (config?.telegramId || 'Unknown')}
+                      {config?.telegramUsername ? `@${config.telegramUsername}` : (config?.telegramId ? `ID: ${config.telegramId}` : 'Telegram User')}
                   </span>
                </div>
                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
