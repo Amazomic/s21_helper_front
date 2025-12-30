@@ -29,4 +29,5 @@ export interface TelegramConfig {
   telegramId?: number;
   telegramUsername?: string;
   visibility: TelegramVisibility;
+  linkedAt?: string;
 }

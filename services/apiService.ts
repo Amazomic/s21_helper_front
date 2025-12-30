@@ -61,7 +61,9 @@ export const fetchData = async (endpoint: string, token: string, options: Reques
 
   let response = await makeRequest(token);
 
+  // Global Interceptor Logic for 401
   if (response.status === 401) {
+    console.log("Токен протух (401), пробуем обновить...");
     const refreshToken = localStorage.getItem('s21_refresh_token');
     
     if (refreshToken) {
@@ -76,15 +78,17 @@ export const fetchData = async (endpoint: string, token: string, options: Reques
           detail: newAuthData.access_token 
         }));
 
+        // Retry original request with new token
         response = await makeRequest(newAuthData.access_token);
       } catch (refreshError) {
-        console.error("Session refresh failed (Token Expired):", refreshError);
+        console.error("Токен протух окончательно, идем на логин...", refreshError);
         window.dispatchEvent(new CustomEvent('s21:session_expired'));
-        throw new Error('Session expired. Please login again.');
+        throw new Error('Session expired');
       }
     } else {
+      console.log("Нет refresh токена, идем на логин...");
       window.dispatchEvent(new CustomEvent('s21:session_expired'));
-      throw new Error('Session expired. Please login again.');
+      throw new Error('Session expired');
     }
   }
 
@@ -103,7 +107,7 @@ export const fetchData = async (endpoint: string, token: string, options: Reques
   }
 };
 
-// --- Telegram Specific Endpoints (REAL IMPLEMENTATION) ---
+// --- Telegram Specific Endpoints ---
 
 const getTelegramInitData = () => {
   return window.Telegram?.WebApp?.initData || '';
@@ -119,20 +123,14 @@ export const fetchTelegramSettings = async (token: string): Promise<TelegramConf
       }
     });
     
-    // Backend returns: { linked: boolean, school_login?: string, visibility?: string }
     return {
       isLinked: data.linked,
       visibility: (data.visibility as TelegramVisibility) || 'private',
-      // Since backend might not return telegram username, we try to grab it from WebApp if available
-      telegramUsername: data.linked 
-        ? (window.Telegram?.WebApp?.initDataUnsafe?.user?.username || 'Linked') 
-        : undefined,
-      telegramId: data.linked
-        ? window.Telegram?.WebApp?.initDataUnsafe?.user?.id
-        : undefined
+      telegramUsername: data.username, // From Backend DB
+      telegramId: data.telegram_id,    // From Backend DB
+      linkedAt: data.created_at        // From Backend DB
     };
   } catch (e: any) {
-    // If endpoint returns 404, it likely means no config exists yet, return default "not linked"
     if (e.message && e.message.includes('404')) {
         return { isLinked: false, visibility: 'private' };
     }
@@ -144,9 +142,6 @@ export const fetchTelegramSettings = async (token: string): Promise<TelegramConf
 export const linkTelegramAccount = async (token: string, username?: string, password?: string): Promise<void> => {
   const initData = getTelegramInitData();
   
-  // POST /link with body { username, password, initData }
-  // Use explicit username/password if provided (during login flow)
-  // Otherwise rely on the Bearer token (authenticated session) + initData if backend supports it
   const body: any = { initData };
   if (username) body.username = username;
   if (password) body.password = password;
@@ -164,7 +159,6 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
     body: JSON.stringify({ visibility, initData })
   });
   
-  // Optimistically return updated config
   return { 
     isLinked: true, 
     visibility,

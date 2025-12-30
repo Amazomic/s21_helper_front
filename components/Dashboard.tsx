@@ -245,7 +245,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
               )}
             </button>
             <div className="flex flex-col items-start">
-              {/* Updated font to font-black to match Project Search style */}
               <h1 className="font-black text-gray-900 dark:text-white tracking-tight leading-none text-lg">
                 {username}
               </h1>
@@ -274,6 +273,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
              <ProjectParticipantsSearch 
                 token={token} 
                 campusId={userData?.campusId || userData?.campus?.id} 
+                telegramConfig={telegramConfig}
               />
           </div>
         ) : (
@@ -297,8 +297,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
         pointsData={pointsData}
         projectsData={projectsData}
         skillsData={skillsData}
-        telegramConfig={telegramConfig}
-        setTelegramConfig={setTelegramConfig}
         token={token}
         loading={{
           user: userLoading && !userData,

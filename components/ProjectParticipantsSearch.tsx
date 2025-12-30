@@ -3,10 +3,12 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { Card } from './ui/Card';
 import { fetchData } from '../services/apiService';
 import { ParticipantModal } from './ParticipantModal';
+import { TelegramConfig } from '../types';
 
 interface ProjectParticipantsSearchProps {
   token: string;
   campusId?: string;
+  telegramConfig?: TelegramConfig | null;
 }
 
 interface NormalizedProject {
@@ -21,7 +23,7 @@ interface Campus {
   fullName: string;
 }
 
-export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId }) => {
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, telegramConfig }) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
@@ -243,6 +245,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     }
   };
 
+  // Logic to detect alien device usage (Telegram ID mismatch)
+  const idMismatch = useMemo(() => {
+    if (!telegramConfig?.isLinked || !telegramConfig.telegramId) return false;
+    const currentTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    if (!currentTgId) return false;
+    return telegramConfig.telegramId !== currentTgId;
+  }, [telegramConfig]);
+
   return (
     <>
       <div ref={containerRef} className="w-full">
@@ -250,43 +260,77 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
           <div className="flex flex-col gap-2 lg:gap-6">
             {/* Header */}
             <div className="flex items-center justify-between gap-2 px-1">
+              {/* Left Side: Title */}
               <div className="flex flex-col min-w-0">
                 <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
                 <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
               </div>
               
-              <div className="flex-shrink-0 flex items-center gap-2">
-                {isCacheLoading ? (
-                  <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
-                    <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
-                    <span className="text-[7px] lg:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter">LOADING</span>
-                  </div>
+              {/* Right Side: Telegram Info & Cache Controls */}
+              <div className="flex-shrink-0 flex items-center gap-2 lg:gap-3">
+                
+                {/* Telegram Status Badge */}
+                {telegramConfig?.isLinked ? (
+                   <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${idMismatch ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-sky-500/10 border-sky-500/20 text-sky-600'}`}>
+                      {/* Icon */}
+                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                         {idMismatch 
+                            ? <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                            : <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                         }
+                      </svg>
+                      
+                      <div className="flex flex-col">
+                         <span className="text-[9px] font-black uppercase leading-none">
+                            {idMismatch ? 'Alien Device' : (telegramConfig.telegramUsername || `ID: ${telegramConfig.telegramId}`)}
+                         </span>
+                         {telegramConfig.linkedAt && !idMismatch && (
+                            <span className="text-[7px] opacity-70 leading-none mt-0.5">
+                               since {new Date(telegramConfig.linkedAt).toLocaleDateString()}
+                            </span>
+                         )}
+                      </div>
+                   </div>
                 ) : (
-                  <>
-                    {cacheStatus === 'READY' ? (
-                      <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
-                        <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                        <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">READY</span>
+                   <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400">
+                      <span className="text-[9px] font-bold uppercase">No Telegram</span>
+                   </div>
+                )}
+
+                {/* Cache Status & Refresh */}
+                <div className="flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-2 lg:pl-3">
+                    {isCacheLoading ? (
+                      <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                        <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                        <span className="text-[7px] lg:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter">LOADING</span>
                       </div>
                     ) : (
-                      <div className="px-1.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-1 shadow-sm">
-                        <div className={`w-1 h-1 rounded-full ${cacheStatus === 'PARTIAL' ? 'bg-amber-50' : 'bg-red-500'}`}></div>
-                        <span className="text-[7px] font-black uppercase tracking-tighter">{cacheStatus}</span>
-                      </div>
+                      <>
+                        {cacheStatus === 'READY' ? (
+                          <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                            <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                            <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter">READY</span>
+                          </div>
+                        ) : (
+                          <div className="px-1.5 py-0.5 bg-amber-500/10 rounded-lg border border-amber-500/20 flex items-center gap-1 shadow-sm">
+                            <div className={`w-1 h-1 rounded-full ${cacheStatus === 'PARTIAL' ? 'bg-amber-50' : 'bg-red-500'}`}></div>
+                            <span className="text-[7px] font-black uppercase tracking-tighter">{cacheStatus}</span>
+                          </div>
+                        )}
+                      </>
                     )}
-                  </>
-                )}
-                
-                <button 
-                  onClick={handleRefreshCache}
-                  disabled={isCacheLoading}
-                  className={`p-1 lg:p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/10 transition-all ${isCacheLoading ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
-                  title="Refresh Graph & Campuses"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${isCacheLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </button>
+                    
+                    <button 
+                      onClick={handleRefreshCache}
+                      disabled={isCacheLoading}
+                      className={`p-1 lg:p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/10 transition-all ${isCacheLoading ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                      title="Refresh Graph & Campuses"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${isCacheLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                    </button>
+                </div>
               </div>
             </div>
 
