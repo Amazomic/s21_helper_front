@@ -56,12 +56,13 @@ export const fetchData = async (endpoint: string, token: string | null, options:
       ...((options.headers as Record<string, string>) || {}),
     };
 
-    // Only attach Authorization if we have a real token (not a placeholder)
+    // Attach Authorization if we have a real token
+    // Now backend supports Bearer token for settings endpoints too!
     if (currentToken && currentToken !== 'telegram-session') {
       headers['Authorization'] = `Bearer ${currentToken}`;
     }
     
-    // Always attach Telegram Init Data if available for backend validation/proxying
+    // Always attach Telegram Init Data if available (Priority for Backend)
     if (initData) {
       headers['x-telegram-init-data'] = initData;
     }
@@ -76,7 +77,9 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 
   // Global Interceptor Logic for 401
   if (response.status === 401) {
-    // If we are relying solely on Telegram Init Data (no token), 401 means backend rejected InitData or session
+    // If request failed with 401, it means NEITHER initData NOR Token were valid.
+    
+    // If we only had initData (no token), we can't refresh.
     if ((!token || token === 'telegram-session') && initData) {
        console.log("Backend rejected Telegram Session (401)");
        throw new Error('Telegram Session Expired');
@@ -110,6 +113,11 @@ export const fetchData = async (endpoint: string, token: string | null, options:
     }
   }
 
+  // Handle 404 separately for settings endpoints to avoid throwing generic errors
+  if (response.status === 404 && endpoint.includes('/telegram/settings')) {
+      return { linked: false }; // Backend now returns explicit 404 if not linked
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     console.error(`API Error on ${endpoint}:`, response.status, errorText);
@@ -129,49 +137,31 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 // --- Telegram Specific Endpoints ---
 
 export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
-  // We manually construct the fetch here to avoid the global 401 interceptor in fetchData
-  // This prevents the "Session expired" logout loop if the user is simply not linked.
-  const initData = window.Telegram?.WebApp?.initData || '';
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-  
-  if (token && token !== 'telegram-session') {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  if (initData) {
-    headers['x-telegram-init-data'] = initData;
-  }
-
   try {
-    const response = await fetch(`${API_BASE}/v1/telegram/settings`, { headers });
-
-    if (response.status === 401 || response.status === 403 || response.status === 404) {
-      // These errors simply mean "Not Linked" in this context, not a fatal session error
-      return { isLinked: false, visibility: 'private' };
+    // Uses standard fetchData which now handles Bearer auth correctly
+    const data = await fetchData('/v1/telegram/settings', token || null);
+    
+    if (!data || !data.linked) {
+        return { isLinked: false, visibility: 'private' };
     }
 
-    if (!response.ok) {
-      // Other errors might be temporary, but return safe default
-      return { isLinked: false, visibility: 'private' };
-    }
-
-    const data = await response.json();
     return {
-      isLinked: data.linked,
+      isLinked: true,
       schoolLogin: data.school_login,
       visibility: (data.visibility as TelegramVisibility) || 'public',
       telegramUsername: data.username, 
       telegramId: data.telegram_id,    
       linkedAt: data.created_at        
     };
-
   } catch (e: any) {
-    console.warn("Telegram settings fetch suppressed error:", e);
+    // If fetchData threw 401 (Refresh failed) or network error, we land here.
+    console.warn("Failed to fetch telegram settings:", e);
     return { isLinked: false, visibility: 'private' };
   }
 };
 
 export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
-  // Only attempt link if we have initData
+  // Only attempt link if we have initData (Must be inside TG)
   if (!window.Telegram?.WebApp?.initData) return;
 
   await fetchData('/v1/telegram/link', null, {
@@ -191,7 +181,8 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
   return { 
     isLinked: true, 
     visibility,
-    telegramUsername: window.Telegram?.WebApp?.initDataUnsafe?.user?.username
+    // We try to fetch updated settings to get full object, or partial return
+    telegramUsername: undefined 
   };
 };
 
