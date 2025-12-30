@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
@@ -12,6 +11,7 @@ declare global {
         ready: () => void;
         expand: () => void;
         colorScheme?: 'light' | 'dark';
+        initData: string;
       };
     };
   }

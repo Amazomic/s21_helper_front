@@ -1,10 +1,11 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchData } from '../services/apiService';
+import { fetchData, fetchTelegramSettings } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
 import { DebugView } from './DebugView';
 import { UserMenu } from './UserMenu';
+import { TelegramConfig } from '../types';
 
 interface DashboardProps {
   username: string;
@@ -57,6 +58,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [userLoading, setUserLoading] = useState(false);
   const [userError, setUserError] = useState<string | null>(null);
 
+  const [telegramConfig, setTelegramConfig] = useState<TelegramConfig | null>(() => {
+     try {
+       const saved = localStorage.getItem('s21_telegram_config');
+       return saved ? JSON.parse(saved) : null;
+     } catch { return null; }
+  });
+
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
   const [modalError, setModalError] = useState<string | null>(null);
@@ -74,6 +82,15 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!skillsData) setSkillsLoading(true);
       if (!projectsData) setProjectsLoading(true);
       if (!userData) setUserLoading(true);
+
+      // Fetch Telegram Settings
+      try {
+        const tgSettings = await fetchTelegramSettings(token);
+        setTelegramConfig(tgSettings);
+        localStorage.setItem('s21_telegram_config', JSON.stringify(tgSettings));
+      } catch (e) {
+        console.error("Failed to fetch Telegram settings", e);
+      }
 
       try {
         const sData = await fetchData(`/v1/participants/${username}/skills`, token);
@@ -218,9 +235,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setUserMenuOpen(true)}
-              className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 hover:scale-105 active:scale-95 transition-transform cursor-pointer"
+              className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 hover:scale-105 active:scale-95 transition-transform cursor-pointer relative"
             >
               {username.charAt(0).toUpperCase()}
+              {telegramConfig?.isLinked && (
+                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                    <div className="w-2.5 h-2.5 bg-sky-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+                 </div>
+              )}
             </button>
             <div className="flex flex-col items-start">
               {/* Updated font to font-black to match Project Search style */}
@@ -275,6 +297,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
         pointsData={pointsData}
         projectsData={projectsData}
         skillsData={skillsData}
+        telegramConfig={telegramConfig}
+        setTelegramConfig={setTelegramConfig}
+        token={token}
         loading={{
           user: userLoading && !userData,
           projects: projectsLoading && !projectsData,

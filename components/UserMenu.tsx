@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { UserProfileCard } from './UserProfileCard';
 import { ProjectsView } from './ProjectsView';
 import { SkillsView } from './SkillsView';
+import { TelegramSettings } from './TelegramSettings';
+import { TelegramConfig } from '../types';
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -11,6 +13,9 @@ interface UserMenuProps {
   pointsData: any;
   projectsData: any;
   skillsData: any;
+  telegramConfig: TelegramConfig | null;
+  setTelegramConfig: (cfg: TelegramConfig | null) => void;
+  token: string;
   loading: {
     user: boolean;
     projects: boolean;
@@ -31,6 +36,9 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   pointsData,
   projectsData,
   skillsData,
+  telegramConfig,
+  setTelegramConfig,
+  token,
   loading,
   errors
 }) => {
@@ -91,6 +99,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             points={pointsData} 
             loading={loading.user} 
             error={errors.user} 
+          />
+
+          {/* Telegram Settings Block */}
+          <TelegramSettings 
+            token={token} 
+            config={telegramConfig} 
+            onUpdate={setTelegramConfig} 
           />
 
           <ProjectsView 

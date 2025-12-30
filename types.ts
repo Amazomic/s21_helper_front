@@ -1,3 +1,4 @@
+
 export interface AuthResponse {
   access_token: string;
   expires_in: number;
@@ -19,4 +20,13 @@ export interface ApiError {
 export interface UserState {
   username: string;
   token: string | null;
+}
+
+export type TelegramVisibility = 'public' | 'request_only' | 'private';
+
+export interface TelegramConfig {
+  isLinked: boolean;
+  telegramId?: number;
+  telegramUsername?: string;
+  visibility: TelegramVisibility;
 }
