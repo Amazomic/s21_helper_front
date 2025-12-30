@@ -111,6 +111,7 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 
   if (!response.ok) {
     const errorText = await response.text();
+    console.error(`API Error on ${endpoint}:`, response.status, errorText);
     throw new Error(`API Error ${response.status}: ${errorText}`);
   }
 
@@ -154,14 +155,11 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
   }
 };
 
-// New flow: Pass school token in body
+// New flow: Pass school token in body AND header (to be safe with Nginx/Proxy auth checks)
 export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
-  // IMPORTANT: Pass null as the token to fetchData.
-  // We do NOT want the Authorization: Bearer header here, because 
-  // the backend might reject it for unlinked accounts or get confused.
-  // We strictly use x-telegram-init-data (header) + school_token (body).
-  
-  await fetchData('/v1/telegram/link', null, {
+  // We pass 'schoolToken' as the second argument to set the Authorization header.
+  // We ALSO pass it in the body as per the new spec.
+  await fetchData('/v1/telegram/link', schoolToken, {
     method: 'POST',
     body: JSON.stringify({ 
       school_token: schoolToken 
