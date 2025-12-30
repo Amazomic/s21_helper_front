@@ -103,7 +103,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
           {/* Telegram Settings Block */}
           <TelegramSettings 
-            token={token} 
+            token={token}
+            initialUsername={userData?.login}
             config={telegramConfig} 
             onUpdate={setTelegramConfig} 
           />

@@ -47,13 +47,14 @@ export const refreshUserToken = async (refreshToken: string): Promise<AuthRespon
   return data;
 };
 
-export const fetchData = async (endpoint: string, token: string): Promise<any> => {
+export const fetchData = async (endpoint: string, token: string, options: RequestInit = {}): Promise<any> => {
   const makeRequest = async (currentToken: string) => {
     return fetch(`${API_BASE}${endpoint}`, {
-      method: 'GET',
+      ...options,
       headers: {
         'Authorization': `Bearer ${currentToken}`,
         'Content-Type': 'application/json',
+        ...options.headers,
       },
     });
   };
@@ -102,74 +103,79 @@ export const fetchData = async (endpoint: string, token: string): Promise<any> =
   }
 };
 
-// --- Telegram Specific Endpoints ---
+// --- Telegram Specific Endpoints (REAL IMPLEMENTATION) ---
+
+const getTelegramInitData = () => {
+  return window.Telegram?.WebApp?.initData || '';
+};
 
 export const fetchTelegramSettings = async (token: string): Promise<TelegramConfig> => {
-  // Try to fetch real data from your backend
   try {
-    const data = await fetchData('/v1/telegram/settings', token);
-    return data;
-  } catch (e) {
-    // Fallback/Mock for UI development if backend endpoint isn't ready
-    console.warn("Telegram settings endpoint not reachable, using mock data or cache");
-    const cached = localStorage.getItem('s21_telegram_config');
-    if (cached) return JSON.parse(cached);
+    const initData = getTelegramInitData();
+    // Pass initData in header for the backend to validate/identify the TG user
+    const data = await fetchData('/v1/telegram/settings', token, {
+      headers: {
+        'x-telegram-init-data': initData
+      }
+    });
     
+    // Backend returns: { linked: boolean, school_login?: string, visibility?: string }
     return {
-      isLinked: false,
-      visibility: 'private'
+      isLinked: data.linked,
+      visibility: (data.visibility as TelegramVisibility) || 'private',
+      // Since backend might not return telegram username, we try to grab it from WebApp if available
+      telegramUsername: data.linked 
+        ? (window.Telegram?.WebApp?.initDataUnsafe?.user?.username || 'Linked') 
+        : undefined,
+      telegramId: data.linked
+        ? window.Telegram?.WebApp?.initDataUnsafe?.user?.id
+        : undefined
     };
+  } catch (e: any) {
+    // If endpoint returns 404, it likely means no config exists yet, return default "not linked"
+    if (e.message && e.message.includes('404')) {
+        return { isLinked: false, visibility: 'private' };
+    }
+    console.error("Failed to fetch telegram settings:", e);
+    return { isLinked: false, visibility: 'private' };
   }
 };
 
-export const linkTelegramAccount = async (token: string, initData: string): Promise<TelegramConfig> => {
-  // Send the Telegram WebApp initData string to backend to verify signature and link user
-  // This simulates the POST request
-  /*
-  const response = await fetch(`${API_BASE}/v1/telegram/link`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ initData }) 
-  });
-  return await response.json();
-  */
+export const linkTelegramAccount = async (token: string, username: string, password: string): Promise<void> => {
+  const initData = getTelegramInitData();
   
-  // MOCK simulation for UI
-  return new Promise((resolve) => {
-    setTimeout(() => {
-        const mockConfig: TelegramConfig = {
-            isLinked: true,
-            telegramId: 12345678,
-            telegramUsername: 'student_21',
-            visibility: 'public'
-        };
-        localStorage.setItem('s21_telegram_config', JSON.stringify(mockConfig));
-        resolve(mockConfig);
-    }, 1000);
+  // POST /link with body { username, password, initData }
+  // We use fetchData to ensure base URL and potential token handling, 
+  // though the backend relies on user/pass and initData for this specific operation.
+  await fetchData('/v1/telegram/link', token, {
+    method: 'POST',
+    body: JSON.stringify({ 
+      username, 
+      password, 
+      initData 
+    })
   });
 };
 
 export const updateTelegramVisibility = async (token: string, visibility: TelegramVisibility): Promise<TelegramConfig> => {
-  // Simulates PUT request
-  /*
-  const response = await fetch(`${API_BASE}/v1/telegram/settings`, {
-      method: 'PUT',
-      headers: { ... },
-      body: JSON.stringify({ visibility }) 
+  const initData = getTelegramInitData();
+  await fetchData('/v1/telegram/settings', token, {
+    method: 'PUT',
+    body: JSON.stringify({ visibility, initData })
   });
-  */
-
-  // MOCK
-  const current = JSON.parse(localStorage.getItem('s21_telegram_config') || '{}');
-  const updated = { ...current, visibility };
-  localStorage.setItem('s21_telegram_config', JSON.stringify(updated));
-  return updated;
+  
+  // Optimistically return updated config
+  return { 
+    isLinked: true, 
+    visibility,
+    telegramUsername: window.Telegram?.WebApp?.initDataUnsafe?.user?.username
+  };
 };
 
 export const unlinkTelegramAccount = async (token: string): Promise<void> => {
-   // Simulates DELETE
-   localStorage.removeItem('s21_telegram_config');
+  const initData = getTelegramInitData();
+  await fetchData('/v1/telegram/link', token, {
+    method: 'DELETE',
+    body: JSON.stringify({ initData })
+  });
 };

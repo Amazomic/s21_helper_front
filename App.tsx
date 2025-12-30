@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { LoginForm } from './components/LoginForm';
 import { Dashboard } from './components/Dashboard';
@@ -12,6 +13,19 @@ declare global {
         expand: () => void;
         colorScheme?: 'light' | 'dark';
         initData: string;
+        initDataUnsafe?: {
+          query_id?: string;
+          user?: {
+            id: number;
+            first_name: string;
+            last_name?: string;
+            username?: string;
+            language_code?: string;
+            is_premium?: boolean;
+          };
+          auth_date?: string;
+          hash?: string;
+        };
       };
     };
   }
