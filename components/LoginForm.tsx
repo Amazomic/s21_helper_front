@@ -36,9 +36,10 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
               // Send ONLY the token. Backend validates it and binds to Telegram ID from initData header.
               await linkTelegramAccount(data.access_token);
            }
-        } catch (ignored) {
-           console.warn("Auto-link failed", ignored);
-           // We do not block login if linking fails, but it would be nice to show a toast/notification
+        } catch (linkErr: any) {
+           console.error("Auto-link failed", linkErr);
+           // Show alert so user can tell us what the error is (e.g. 403 Forbidden body)
+           alert(`Telegram Link Failed: ${linkErr.message}`);
         }
       }
       
