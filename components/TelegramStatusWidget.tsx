@@ -29,7 +29,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
       await updateTelegramVisibility(token, vis);
     } catch (e) {
        console.error("Failed to update visibility", e);
-       // Revert on failure (needs fetch)
     } finally {
       setIsUpdating(false);
     }
@@ -60,7 +59,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
     );
   }
 
-  const isLinked = config?.isLinked;
+  const isLinked = config?.isLinked === true;
   const visibility = config?.visibility || 'public'; 
 
   return (
@@ -80,14 +79,18 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
       </div>
 
       <div className="p-4">
-         {!isLinked ? (
+         {/* NOT LINKED STATE */}
+         {!isLinked && (
             <div className="flex flex-col gap-3 py-2">
                   <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
                      Account not linked. 
                      {!isTelegramContext && " Open this app in Telegram to link."}
                   </p>
             </div>
-         ) : (
+         )}
+
+         {/* LINKED STATE - ALWAYS SHOW IF LINKED */}
+         {isLinked && (
             <div className="space-y-4">
                {/* Identity Card */}
                <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-gray-800">

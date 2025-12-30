@@ -69,6 +69,8 @@ const App: React.FC = () => {
 
       const isTelegram = !!window.Telegram?.WebApp?.initData;
 
+      // Only check auto-login settings IF we are in Telegram. 
+      // Web users will fetch settings in Dashboard after normal login.
       if (isTelegram) {
         try {
            // Try to fetch settings using just InitData (no school token yet)

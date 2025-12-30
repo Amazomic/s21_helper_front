@@ -129,10 +129,32 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 // --- Telegram Specific Endpoints ---
 
 export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
+  // We manually construct the fetch here to avoid the global 401 interceptor in fetchData
+  // This prevents the "Session expired" logout loop if the user is simply not linked.
+  const initData = window.Telegram?.WebApp?.initData || '';
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  
+  if (token && token !== 'telegram-session') {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  if (initData) {
+    headers['x-telegram-init-data'] = initData;
+  }
+
   try {
-    // Allow fetching settings even without initData (for Web view of linked account)
-    const data = await fetchData('/v1/telegram/settings', token || null);
-    
+    const response = await fetch(`${API_BASE}/v1/telegram/settings`, { headers });
+
+    if (response.status === 401 || response.status === 403 || response.status === 404) {
+      // These errors simply mean "Not Linked" in this context, not a fatal session error
+      return { isLinked: false, visibility: 'private' };
+    }
+
+    if (!response.ok) {
+      // Other errors might be temporary, but return safe default
+      return { isLinked: false, visibility: 'private' };
+    }
+
+    const data = await response.json();
     return {
       isLinked: data.linked,
       schoolLogin: data.school_login,
@@ -141,12 +163,9 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
       telegramId: data.telegram_id,    
       linkedAt: data.created_at        
     };
+
   } catch (e: any) {
-    // 404 means not linked
-    if (e.message && e.message.includes('404')) {
-        return { isLinked: false, visibility: 'private' };
-    }
-    console.warn("Failed to fetch telegram settings:", e);
+    console.warn("Telegram settings fetch suppressed error:", e);
     return { isLinked: false, visibility: 'private' };
   }
 };
