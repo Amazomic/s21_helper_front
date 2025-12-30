@@ -38,7 +38,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   return (
     <Card className="shadow-xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 h-full">
-      <div className="flex flex-col gap-4 p-1">
+      <div className="flex flex-col gap-3 p-2">
         
         {/* Header */}
         <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-800">
@@ -48,16 +48,24 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
                </svg>
              </div>
-             <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider">Telegram</h3>
+             <div className="flex flex-col">
+                <h3 className="text-xs font-black text-gray-800 dark:text-white uppercase tracking-wider">Telegram</h3>
+                <span className="text-[8px] text-gray-400 font-bold uppercase">Integration</span>
+             </div>
           </div>
-          <div className={`px-2 py-0.5 rounded-lg border text-[8px] font-black uppercase tracking-tight ${isLinked ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-800 dark:border-gray-700'}`}>
+          <div className={`px-2 py-1 rounded-lg border text-[8px] font-black uppercase tracking-tight ${isLinked ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-gray-100 text-gray-400 border-gray-200 dark:bg-gray-800 dark:border-gray-700'}`}>
             {isLinked ? 'Linked' : 'Not Linked'}
           </div>
         </div>
 
         {/* Content */}
         {!isLinked ? (
-          <div className="py-4 text-center">
+          <div className="py-6 text-center bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+             <div className="mb-2 text-gray-300 dark:text-gray-600">
+                <svg className="w-8 h-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
+             </div>
              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                No account connected
              </p>
@@ -66,38 +74,46 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
           <div className="space-y-4">
             
             {/* User Info / Alien Check */}
-            <div className={`p-3 rounded-xl border ${idMismatch ? 'bg-red-500/5 border-red-500/20' : 'bg-gray-50 dark:bg-gray-800/50 border-gray-100 dark:border-gray-800'}`}>
+            <div className={`p-3 rounded-xl border ${idMismatch ? 'bg-red-500/5 border-red-500/20' : 'bg-sky-500/5 border-sky-100 dark:border-sky-900/20'}`}>
                <div className="flex justify-between items-start">
                   <div className="flex flex-col">
-                     <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Account</span>
-                     <span className={`text-[11px] font-black ${idMismatch ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
+                     <span className="text-[8px] font-bold text-gray-400 uppercase tracking-widest mb-0.5">Connected Account</span>
+                     <span className={`text-sm font-black ${idMismatch ? 'text-red-500' : 'text-gray-800 dark:text-white'}`}>
                         {config?.telegramUsername ? `@${config.telegramUsername}` : `ID: ${config?.telegramId}`}
                      </span>
                      {config?.linkedAt && (
-                       <span className="text-[8px] text-gray-400 mt-1">
-                         Since: {new Date(config.linkedAt).toLocaleDateString()}
+                       <span className="text-[9px] text-gray-400 mt-0.5">
+                         Linked: {new Date(config.linkedAt).toLocaleDateString()}
                        </span>
                      )}
                   </div>
                   {idMismatch && (
-                    <div className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase">
+                    <div className="bg-red-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded uppercase shadow-sm">
                       Alien Device
                     </div>
                   )}
                </div>
             </div>
 
-            {/* Settings Placeholders */}
+            <div className="h-px bg-gray-100 dark:bg-gray-800 w-full"></div>
+
+            {/* Settings Area */}
             <div className="space-y-3">
-               <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">Visibility</span>
+               <h4 className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-2">Settings</h4>
+               
+               <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/30 rounded-xl">
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-gray-700 dark:text-gray-200">Profile Visibility</span>
+                     <span className="text-[8px] text-gray-400">Who can see you</span>
+                  </div>
+                  
                   {/* Pseudo Dropdown/Toggle for Visibility */}
-                  <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5">
+                  <div className="flex bg-gray-200 dark:bg-gray-700 rounded-lg p-0.5">
                      {(['public', 'private'] as const).map((v) => (
                         <button
                           key={v}
                           onClick={() => setVisibility(v)}
-                          className={`px-2 py-1 rounded-md text-[8px] font-black uppercase transition-all ${visibility === v ? 'bg-white dark:bg-gray-700 shadow-sm text-primary' : 'text-gray-400'}`}
+                          className={`px-2 py-1 rounded-md text-[8px] font-black uppercase transition-all ${visibility === v ? 'bg-white dark:bg-gray-600 shadow-sm text-primary' : 'text-gray-500 dark:text-gray-400'}`}
                         >
                           {v}
                         </button>
@@ -105,14 +121,18 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                   </div>
                </div>
 
-               <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-gray-600 dark:text-gray-300">Bot Notifications</span>
+               <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/30 rounded-xl">
+                  <div className="flex flex-col">
+                     <span className="text-[10px] font-bold text-gray-700 dark:text-gray-200">Notifications</span>
+                     <span className="text-[8px] text-gray-400">Allow bot messages</span>
+                  </div>
+                  
                   {/* Toggle Switch */}
                   <button 
                     onClick={() => setAllowNotifications(!allowNotifications)}
-                    className={`w-8 h-4 rounded-full transition-colors relative ${allowNotifications ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-700'}`}
+                    className={`w-9 h-5 rounded-full transition-colors relative ${allowNotifications ? 'bg-primary' : 'bg-gray-300 dark:bg-gray-600'}`}
                   >
-                    <div className={`absolute top-0.5 left-0.5 w-3 h-3 bg-white rounded-full transition-transform ${allowNotifications ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    <div className={`absolute top-1 left-1 w-3 h-3 bg-white rounded-full transition-transform shadow-sm ${allowNotifications ? 'translate-x-4' : 'translate-x-0'}`}></div>
                   </button>
                </div>
             </div>

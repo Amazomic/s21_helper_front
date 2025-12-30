@@ -275,22 +275,31 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
           <div className="max-w-5xl mx-auto animate-in fade-in duration-500">
-             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-               {/* Search Block - 2 Columns */}
-               <div className="lg:col-span-2 w-full">
+             {/* 
+                LAYOUT CHANGE: 
+                Mobile: Flex column. Widget is FIRST (top), Search is SECOND (bottom).
+                Desktop: Grid 3 cols. Search is LEFT (2 cols), Widget is RIGHT (1 col).
+             */}
+             <div className="flex flex-col gap-6 items-start lg:grid lg:grid-cols-3">
+               
+               {/* Telegram Status Widget */}
+               {/* Mobile: default order (first). Desktop: order-last (right side) */}
+               <div className="w-full lg:col-span-1 lg:order-last">
+                 <TelegramStatusWidget 
+                   config={telegramConfig} 
+                   loading={telegramLoading} 
+                 />
+               </div>
+
+               {/* Project Search */}
+               {/* Mobile: default order (second). Desktop: order-first (left side) */}
+               <div className="w-full lg:col-span-2">
                  <ProjectParticipantsSearch 
                     token={token} 
                     campusId={userData?.campusId || userData?.campus?.id} 
                   />
                </div>
 
-               {/* Telegram Status Widget - 1 Column */}
-               <div className="lg:col-span-1 w-full">
-                 <TelegramStatusWidget 
-                   config={telegramConfig} 
-                   loading={telegramLoading} 
-                 />
-               </div>
              </div>
           </div>
         ) : (
