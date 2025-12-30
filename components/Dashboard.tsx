@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fetchData, fetchTelegramSettings } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
+import { TelegramStatusWidget } from './TelegramStatusWidget';
 import { DebugView } from './DebugView';
 import { UserMenu } from './UserMenu';
 import { TelegramConfig } from '../types';
@@ -64,6 +65,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
        return saved ? JSON.parse(saved) : null;
      } catch { return null; }
   });
+  const [telegramLoading, setTelegramLoading] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalData, setModalData] = useState<any>(null);
@@ -82,6 +84,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!skillsData) setSkillsLoading(true);
       if (!projectsData) setProjectsLoading(true);
       if (!userData) setUserLoading(true);
+      if (!telegramConfig) setTelegramLoading(true);
 
       // Fetch Telegram Settings
       try {
@@ -90,6 +93,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
         localStorage.setItem('s21_telegram_config', JSON.stringify(tgSettings));
       } catch (e) {
         console.error("Failed to fetch Telegram settings", e);
+      } finally {
+        setTelegramLoading(false);
       }
 
       try {
@@ -269,12 +274,24 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
-          <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
-             <ProjectParticipantsSearch 
-                token={token} 
-                campusId={userData?.campusId || userData?.campus?.id} 
-                telegramConfig={telegramConfig}
-              />
+          <div className="max-w-5xl mx-auto animate-in fade-in duration-500">
+             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+               {/* Search Block - 2 Columns */}
+               <div className="lg:col-span-2 w-full">
+                 <ProjectParticipantsSearch 
+                    token={token} 
+                    campusId={userData?.campusId || userData?.campus?.id} 
+                  />
+               </div>
+
+               {/* Telegram Status Widget - 1 Column */}
+               <div className="lg:col-span-1 w-full">
+                 <TelegramStatusWidget 
+                   config={telegramConfig} 
+                   loading={telegramLoading} 
+                 />
+               </div>
+             </div>
           </div>
         ) : (
           <DebugView 

@@ -3,12 +3,10 @@ import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { Card } from './ui/Card';
 import { fetchData } from '../services/apiService';
 import { ParticipantModal } from './ParticipantModal';
-import { TelegramConfig } from '../types';
 
 interface ProjectParticipantsSearchProps {
   token: string;
   campusId?: string;
-  telegramConfig?: TelegramConfig | null;
 }
 
 interface NormalizedProject {
@@ -23,7 +21,7 @@ interface Campus {
   fullName: string;
 }
 
-export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, telegramConfig }) => {
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId }) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
@@ -33,9 +31,9 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [error, setError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCampusDropdown, setShowCampusDropdown] = useState(false);
-  const [cacheVersion, setCacheVersion] = useState(0); 
   
-  // New state for cache loading
+  // Cache version allows manual re-trigger of memoization without auto-interval
+  const [cacheVersion, setCacheVersion] = useState(0); 
   const [isCacheLoading, setIsCacheLoading] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,7 +46,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
   const statuses = ['ASSIGNED', 'REGISTERED', 'IN_PROGRESS', 'IN_REVIEWS', 'ACCEPTED', 'FAILED'];
 
-  // Check cache presence and auto-load if missing
+  // Check cache presence and auto-load if missing (run only once on mount)
   useEffect(() => {
     const checkAndLoadCache = async () => {
       const hasGraph = !!localStorage.getItem('s21_graph_cache');
@@ -56,20 +54,13 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
       if (!hasGraph || !hasCampuses) {
         await handleRefreshCache();
+      } else {
+        // Force update to read from local storage if exists
+        setCacheVersion(v => v + 1);
       }
     };
     checkAndLoadCache();
-  }, []); // Run once on mount
-
-  useEffect(() => {
-    const check = () => setCacheVersion(v => v + 1);
-    window.addEventListener('focus', check);
-    const interval = setInterval(check, 3000);
-    return () => {
-      window.removeEventListener('focus', check);
-      clearInterval(interval);
-    };
-  }, []);
+  }, []); 
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -118,6 +109,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     } catch (e) { return []; }
   };
 
+  // Re-calculate these only when cacheVersion changes (manual refresh)
   const projects = useMemo(() => getProjectsFromCache(), [cacheVersion]);
   const campuses = useMemo(() => getCampusesFromCache(), [cacheVersion]);
 
@@ -133,7 +125,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     if (isCacheLoading) return;
     setIsCacheLoading(true);
     try {
-      // Fetch graph and campuses in parallel
       const [graphData, campusesData] = await Promise.all([
         fetchData('/v1/graph', token),
         fetchData('/v1/campuses', token)
@@ -145,7 +136,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       localStorage.setItem('s21_campuses_cache', JSON.stringify(campusesData));
       localStorage.setItem('s21_campuses_cache_timestamp', new Date().toISOString());
 
-      // Force update local state
       setCacheVersion(v => v + 1);
     } catch (e) {
       console.error("Failed to refresh global cache", e);
@@ -219,10 +209,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
         ...(reviewsData?.projects || [])
       ];
 
-      // Remove duplicates if any
       const uniqueProjects = Array.from(new Map(projects.map((p: any) => [p.id, p])).values());
 
-      // Normalize coalition data
       let coalition = null;
       if (Array.isArray(coalitionRes) && coalitionRes.length > 0) {
         coalition = coalitionRes[0];
@@ -245,60 +233,21 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     }
   };
 
-  // Logic to detect alien device usage (Telegram ID mismatch)
-  const idMismatch = useMemo(() => {
-    if (!telegramConfig?.isLinked || !telegramConfig.telegramId) return false;
-    const currentTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
-    if (!currentTgId) return false;
-    return telegramConfig.telegramId !== currentTgId;
-  }, [telegramConfig]);
-
   return (
     <>
       <div ref={containerRef} className="w-full">
-        <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all">
+        <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full">
           <div className="flex flex-col gap-2 lg:gap-6">
             {/* Header */}
             <div className="flex items-center justify-between gap-2 px-1">
-              {/* Left Side: Title */}
               <div className="flex flex-col min-w-0">
                 <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
                 <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
               </div>
               
-              {/* Right Side: Telegram Info & Cache Controls */}
+              {/* Cache Controls */}
               <div className="flex-shrink-0 flex items-center gap-2 lg:gap-3">
-                
-                {/* Telegram Status Badge */}
-                {telegramConfig?.isLinked ? (
-                   <div className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border ${idMismatch ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-sky-500/10 border-sky-500/20 text-sky-600'}`}>
-                      {/* Icon */}
-                      <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                         {idMismatch 
-                            ? <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                            : <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                         }
-                      </svg>
-                      
-                      <div className="flex flex-col">
-                         <span className="text-[9px] font-black uppercase leading-none">
-                            {idMismatch ? 'Alien Device' : (telegramConfig.telegramUsername || `ID: ${telegramConfig.telegramId}`)}
-                         </span>
-                         {telegramConfig.linkedAt && !idMismatch && (
-                            <span className="text-[7px] opacity-70 leading-none mt-0.5">
-                               since {new Date(telegramConfig.linkedAt).toLocaleDateString()}
-                            </span>
-                         )}
-                      </div>
-                   </div>
-                ) : (
-                   <div className="hidden lg:flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-400">
-                      <span className="text-[9px] font-bold uppercase">No Telegram</span>
-                   </div>
-                )}
-
-                {/* Cache Status & Refresh */}
-                <div className="flex items-center gap-2 border-l border-gray-200 dark:border-gray-700 pl-2 lg:pl-3">
+                <div className="flex items-center gap-2 pl-2 lg:pl-3">
                     {isCacheLoading ? (
                       <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
                         <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
