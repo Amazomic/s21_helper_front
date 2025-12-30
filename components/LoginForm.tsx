@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { loginUser } from '../services/apiService';
+import { loginUser, fetchTelegramSettings, linkTelegramAccount } from '../services/apiService';
 import { Button } from './ui/Button';
 import { AuthResponse } from '../types';
 
@@ -25,7 +25,28 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     const normalizedUsername = username.toLowerCase().trim();
 
     try {
+      // 1. Authenticate with School 21
       const data = await loginUser(normalizedUsername, password);
+      
+      // 2. Auto-link Telegram if running inside WebApp
+      if (window.Telegram?.WebApp?.initData) {
+        try {
+          // Check current status
+          const settings = await fetchTelegramSettings(data.access_token);
+          
+          if (!settings.isLinked) {
+             // Not linked? Link immediately using current credentials
+             console.log("Auto-linking Telegram account...");
+             await linkTelegramAccount(data.access_token, normalizedUsername, password);
+             console.log("Telegram account auto-linked successfully.");
+          }
+        } catch (tgError) {
+          // We don't block login if auto-linking fails, just log it.
+          console.warn("Failed to auto-link Telegram account:", tgError);
+        }
+      }
+
+      // 3. Proceed to Dashboard
       onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {
       setError(err.message || 'Login failed');
