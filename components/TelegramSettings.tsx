@@ -12,38 +12,29 @@ interface TelegramSettingsProps {
   onUpdate: (newConfig: TelegramConfig | null) => void;
 }
 
-export const TelegramSettings: React.FC<TelegramSettingsProps> = ({ token, initialUsername, config, onUpdate }) => {
+export const TelegramSettings: React.FC<TelegramSettingsProps> = ({ token, config, onUpdate }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [linkUsername, setLinkUsername] = useState(initialUsername || '');
-  const [linkPassword, setLinkPassword] = useState('');
-  const [showLinkForm, setShowLinkForm] = useState(false);
 
   // Check if running inside Telegram
   const isTelegramWebApp = !!window.Telegram?.WebApp?.initData;
 
-  const handleLink = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLink = async () => {
     if (!isTelegramWebApp) {
       alert("Please open this app inside Telegram to link your account.");
       return;
     }
     
-    if (!linkUsername || !linkPassword) {
-      alert("Please enter both username and password.");
-      return;
-    }
-
     setIsLoading(true);
     try {
-      await linkTelegramAccount(token, linkUsername, linkPassword);
-      // Fetch fresh settings to confirm link and get status
+      // Try to link using just the current token/session
+      await linkTelegramAccount(token);
+      
+      // Fetch fresh settings to confirm link
       const newConfig = await fetchTelegramSettings(token);
       onUpdate(newConfig);
-      setShowLinkForm(false);
-      setLinkPassword(''); // clear password
     } catch (e: any) {
       console.error(e);
-      alert("Failed to link Telegram account: " + e.message);
+      alert("Auto-link failed. Please log out and log in again to verify your identity.");
     } finally {
       setIsLoading(false);
     }
@@ -97,38 +88,20 @@ export const TelegramSettings: React.FC<TelegramSettingsProps> = ({ token, initi
         {!config.isLinked ? (
             <div className="flex flex-col gap-3">
                 <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                    Link your Telegram account to receive notifications and allow peers to find you easier.
-                    <br/><span className="text-[9px] opacity-70">Requires School 21 credentials verification.</span>
+                   Account not linked. 
+                   <br/>
+                   <span className="opacity-70">Please log out and log in again to link automatically.</span>
                 </p>
                 
-                {showLinkForm ? (
-                  <form onSubmit={handleLink} className="space-y-3 animate-in fade-in slide-in-from-top-2">
-                     <div className="space-y-2">
-                        <input 
-                          type="text" 
-                          value={linkUsername} 
-                          onChange={(e) => setLinkUsername(e.target.value)} 
-                          placeholder="School Login (e.g. u.name)" 
-                          className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-sky-500 outline-none"
-                          required
-                        />
-                        <input 
-                          type="password" 
-                          value={linkPassword} 
-                          onChange={(e) => setLinkPassword(e.target.value)} 
-                          placeholder="Password" 
-                          className="w-full px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-xs focus:ring-2 focus:ring-sky-500 outline-none"
-                          required
-                        />
-                     </div>
-                     <div className="flex gap-2">
-                        <Button type="button" variant="secondary" onClick={() => setShowLinkForm(false)} className="text-xs py-2">Cancel</Button>
-                        <Button type="submit" isLoading={isLoading} disabled={!isTelegramWebApp} className="text-xs py-2 bg-sky-600 hover:bg-sky-700">Link Account</Button>
-                     </div>
-                  </form>
-                ) : (
-                  <Button onClick={() => setShowLinkForm(true)} disabled={!isTelegramWebApp} className="bg-sky-600 hover:bg-sky-700 text-white border-none">
-                      {isTelegramWebApp ? 'Connect Telegram' : 'Open in Telegram to Connect'}
+                {/* Fallback button that uses TOKEN ONLY, no form */}
+                {isTelegramWebApp && (
+                  <Button 
+                    onClick={handleLink} 
+                    isLoading={isLoading}
+                    variant="outline"
+                    className="py-2 text-xs"
+                  >
+                      Retry Linking (Current Session)
                   </Button>
                 )}
             </div>

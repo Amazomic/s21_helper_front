@@ -12,6 +12,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState('Sign In');
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,8 +21,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
 
     setLoading(true);
     setError(null);
+    setLoadingText('Authenticating...');
 
-    // Normalize username to lowercase and trim whitespace
     const normalizedUsername = username.toLowerCase().trim();
 
     try {
@@ -29,27 +30,30 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       const data = await loginUser(normalizedUsername, password);
       
       // 2. Auto-link Telegram if running inside WebApp
+      // We check specifically for initData to ensure we are in TG
       if (window.Telegram?.WebApp?.initData) {
+        setLoadingText('Linking Telegram...');
         try {
-          // Check current status
+          // Check if already linked to avoid errors or redundant calls
           const settings = await fetchTelegramSettings(data.access_token);
           
           if (!settings.isLinked) {
-             // Not linked? Link immediately using current credentials
-             console.log("Auto-linking Telegram account...");
+             // Link using the credentials we HAVE right now
              await linkTelegramAccount(data.access_token, normalizedUsername, password);
-             console.log("Telegram account auto-linked successfully.");
           }
         } catch (tgError) {
-          // We don't block login if auto-linking fails, just log it.
-          console.warn("Failed to auto-link Telegram account:", tgError);
+          console.warn("Auto-link warning:", tgError);
+          // We do not stop the login process if linking fails, 
+          // but we might want to log it or notify quietly
         }
       }
 
+      setLoadingText('Success!');
       // 3. Proceed to Dashboard
       onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {
       setError(err.message || 'Login failed');
+      setLoadingText('Sign In');
     } finally {
       setLoading(false);
     }
@@ -87,6 +91,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
                 placeholder="Enter login"
                 required
+                disabled={loading}
               />
             </div>
             
@@ -99,13 +104,14 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 className="w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all text-sm"
                 placeholder="••••••••"
                 required
+                disabled={loading}
               />
             </div>
           </div>
 
           <div className="pt-2">
             <Button type="submit" isLoading={loading}>
-              Sign In
+              {loading ? loadingText : 'Sign In'}
             </Button>
           </div>
 

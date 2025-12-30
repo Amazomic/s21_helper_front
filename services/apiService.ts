@@ -141,19 +141,19 @@ export const fetchTelegramSettings = async (token: string): Promise<TelegramConf
   }
 };
 
-export const linkTelegramAccount = async (token: string, username: string, password: string): Promise<void> => {
+export const linkTelegramAccount = async (token: string, username?: string, password?: string): Promise<void> => {
   const initData = getTelegramInitData();
   
   // POST /link with body { username, password, initData }
-  // We use fetchData to ensure base URL and potential token handling, 
-  // though the backend relies on user/pass and initData for this specific operation.
+  // Use explicit username/password if provided (during login flow)
+  // Otherwise rely on the Bearer token (authenticated session) + initData if backend supports it
+  const body: any = { initData };
+  if (username) body.username = username;
+  if (password) body.password = password;
+
   await fetchData('/v1/telegram/link', token, {
     method: 'POST',
-    body: JSON.stringify({ 
-      username, 
-      password, 
-      initData 
-    })
+    body: JSON.stringify(body)
   });
 };
 
