@@ -148,6 +148,9 @@ export const linkTelegramAccount = async (token: string, username?: string, pass
 
   await fetchData('/v1/telegram/link', token, {
     method: 'POST',
+    headers: {
+      'x-telegram-init-data': initData
+    },
     body: JSON.stringify(body)
   });
 };
@@ -156,6 +159,9 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
   const initData = getTelegramInitData();
   await fetchData('/v1/telegram/settings', token, {
     method: 'PUT',
+    headers: {
+      'x-telegram-init-data': initData
+    },
     body: JSON.stringify({ visibility, initData })
   });
   
@@ -170,6 +176,9 @@ export const unlinkTelegramAccount = async (token: string): Promise<void> => {
   const initData = getTelegramInitData();
   await fetchData('/v1/telegram/link', token, {
     method: 'DELETE',
+    headers: {
+      'x-telegram-init-data': initData
+    },
     body: JSON.stringify({ initData })
   });
 };
