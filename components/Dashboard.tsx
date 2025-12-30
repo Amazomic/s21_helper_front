@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchData, fetchTelegramSettings } from '../services/apiService';
+import { fetchData, fetchTelegramSettings, linkTelegramAccount } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
 import { TelegramStatusWidget } from './TelegramStatusWidget';
@@ -86,9 +86,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
       if (!userData) setUserLoading(true);
       if (!telegramConfig) setTelegramLoading(true);
 
-      // Fetch Telegram Settings
+      // Fetch Telegram Settings & Handle Auto-Link
       try {
-        const tgSettings = await fetchTelegramSettings(token);
+        let tgSettings = await fetchTelegramSettings(token);
+        
+        // Auto-Link Logic: If NOT linked but inside Telegram, try to link now
+        const isTgWebApp = !!window.Telegram?.WebApp?.initData;
+        
+        if (!tgSettings.isLinked && isTgWebApp) {
+           try {
+             await linkTelegramAccount(token);
+             // Re-fetch settings after linking
+             tgSettings = await fetchTelegramSettings(token);
+           } catch (linkErr) {
+             // Silent fail
+           }
+        }
+
         setTelegramConfig(tgSettings);
         localStorage.setItem('s21_telegram_config', JSON.stringify(tgSettings));
       } catch (e) {

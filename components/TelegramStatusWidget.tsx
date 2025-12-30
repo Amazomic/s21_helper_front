@@ -13,14 +13,19 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   const [allowNotifications, setAllowNotifications] = useState(true);
   const [visibility, setVisibility] = useState<TelegramVisibility>(config?.visibility || 'private');
 
+  // Telegram WebApp Data
+  const tgWebApp = window.Telegram?.WebApp;
+  const tgUser = tgWebApp?.initDataUnsafe?.user;
+  const rawInitData = tgWebApp?.initData;
+
   // Detect alien device (Telegram ID mismatch)
   const idMismatch = useMemo(() => {
     if (!config?.isLinked || !config.telegramId) return false;
     // Safely access Telegram WebApp
-    const currentTgId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
+    const currentTgId = tgUser?.id;
     if (!currentTgId) return false; // If not in TG, can't verify mismatch
     return config.telegramId !== currentTgId;
-  }, [config]);
+  }, [config, tgUser]);
 
   if (loading) {
     return (
@@ -139,6 +144,33 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
           </div>
         )}
+
+        {/* DEBUG DATA SECTION */}
+        <div className="mt-4 p-2.5 bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
+            <h5 className="text-[8px] font-black text-gray-500 uppercase mb-1">DEBUG DATA</h5>
+            <div className="text-[8px] font-mono text-emerald-400 flex flex-col gap-1">
+                <div className="flex justify-between">
+                    <span className="opacity-50">TG WebApp:</span>
+                    <span>{rawInitData ? 'ACTIVE' : 'INACTIVE'}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="opacity-50">WebApp User ID:</span>
+                    <span>{tgUser?.id || 'null'}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="opacity-50">Backend Linked:</span>
+                    <span className={config?.isLinked ? 'text-emerald-400' : 'text-red-400'}>{config?.isLinked ? 'YES' : 'NO'}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span className="opacity-50">Backend TG ID:</span>
+                    <span>{config?.telegramId || 'null'}</span>
+                </div>
+                <div className="flex justify-between border-t border-gray-800 pt-1 mt-1">
+                    <span className="opacity-50">ID Mismatch:</span>
+                    <span className={idMismatch ? 'text-red-400' : 'text-gray-400'}>{idMismatch ? 'YES' : 'NO'}</span>
+                </div>
+            </div>
+        </div>
       </div>
     </Card>
   );
