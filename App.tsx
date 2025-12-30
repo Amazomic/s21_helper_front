@@ -67,7 +67,6 @@ const App: React.FC = () => {
         window.Telegram.WebApp.expand();
       }
 
-      // 1. Check if we have valid initData (are we in Telegram?)
       const isTelegram = !!window.Telegram?.WebApp?.initData;
 
       if (isTelegram) {
@@ -90,7 +89,6 @@ const App: React.FC = () => {
                // Do not save placeholder to localStorage to avoid confusion
              }
            } 
-           // If not linked (404), we fall through to normal token check
         } catch (e) {
           console.warn("Initial Telegram check failed", e);
         }

@@ -127,12 +127,14 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 
 // --- Telegram Specific Endpoints ---
 
-const getTelegramInitData = () => {
-  return window.Telegram?.WebApp?.initData || '';
-};
-
 // Optional token, because we might call this with just InitData at app start
 export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
+  // CRITICAL FIX: Do not attempt to fetch settings if not in Telegram (no initData).
+  // This prevents 401 Unauthorized errors on the Web version.
+  if (!window.Telegram?.WebApp?.initData) {
+    return { isLinked: false, visibility: 'private' };
+  }
+
   try {
     // Headers are handled in fetchData, including x-telegram-init-data
     const data = await fetchData('/v1/telegram/settings', token || null);
@@ -140,7 +142,7 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
     return {
       isLinked: data.linked,
       schoolLogin: data.school_login,
-      visibility: (data.visibility as TelegramVisibility) || 'private',
+      visibility: (data.visibility as TelegramVisibility) || 'public',
       telegramUsername: data.username, 
       telegramId: data.telegram_id,    
       linkedAt: data.created_at        
@@ -155,9 +157,10 @@ export const fetchTelegramSettings = async (token?: string | null): Promise<Tele
   }
 };
 
-// We pass schoolToken in body, but keep Auth header NULL to prevent conflict.
-// fetchData will attach x-telegram-init-data automatically.
 export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
+  // Only attempt link if we have initData
+  if (!window.Telegram?.WebApp?.initData) return;
+
   await fetchData('/v1/telegram/link', null, {
     method: 'POST',
     body: JSON.stringify({ 

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { loginUser } from '../services/apiService';
+import { loginUser, linkTelegramAccount } from '../services/apiService';
 import { Button } from './ui/Button';
 import { AuthResponse } from '../types';
 
@@ -21,14 +21,22 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setError(null);
 
-    // Ensure lowercase on submit as well, just in case
+    // Ensure lowercase on submit
     const normalizedUsername = username.toLowerCase().trim();
 
     try {
       // 1. Authenticate with School 21
       const data = await loginUser(normalizedUsername, password);
 
-      // NOTE: Auto-linking removed to allow manual diagnostics of 403 errors via the Dashboard widget.
+      // 2. Auto-Link Telegram if we are in the Telegram WebApp environment
+      if (window.Telegram?.WebApp?.initData) {
+         try {
+           await linkTelegramAccount(data.access_token);
+         } catch (linkError) {
+           console.error("Auto-link failed (non-fatal):", linkError);
+           // We do not block login if linking fails, but we log it.
+         }
+      }
       
       onLoginSuccess(normalizedUsername, data);
     } catch (err: any) {

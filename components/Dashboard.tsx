@@ -92,7 +92,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         setTelegramConfig(tgSettings);
         localStorage.setItem('s21_telegram_config', JSON.stringify(tgSettings));
       } catch (e) {
-        console.error("Failed to fetch Telegram settings", e);
+        // Ignored. 401s are now handled/suppressed in apiService for web users.
       } finally {
         setTelegramLoading(false);
       }
@@ -225,7 +225,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
     setModalOpen(true);
   };
 
-  // We rely on userData.className but don't display it in header anymore
+  // Callback to update local state when widget changes visibility settings
+  const handleConfigUpdate = (newConfig: TelegramConfig | null) => {
+    setTelegramConfig(newConfig);
+    if (newConfig) {
+      localStorage.setItem('s21_telegram_config', JSON.stringify(newConfig));
+    } else {
+      localStorage.removeItem('s21_telegram_config');
+    }
+  };
+
   const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (projectsLoading && !projectsData);
 
   return (
@@ -282,6 +291,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
                  <TelegramStatusWidget 
                    config={telegramConfig} 
                    loading={telegramLoading} 
+                   onUpdateConfig={handleConfigUpdate}
+                   token={token}
                  />
                </div>
 

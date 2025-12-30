@@ -1,44 +1,47 @@
 
 import React, { useState } from 'react';
 import { Card } from './ui/Card';
-import { Button } from './ui/Button';
-import { TelegramConfig } from '../types';
-import { linkTelegramAccount } from '../services/apiService';
+import { TelegramConfig, TelegramVisibility } from '../types';
+import { updateTelegramVisibility, unlinkTelegramAccount } from '../services/apiService';
 
 interface TelegramStatusWidgetProps {
   config: TelegramConfig | null;
   loading: boolean;
+  onUpdateConfig: (newConfig: TelegramConfig | null) => void;
+  token: string;
 }
 
-export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ config, loading }) => {
-  const [isLinking, setIsLinking] = useState(false);
-  const [linkError, setLinkError] = useState<string | null>(null);
+export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ config, loading, onUpdateConfig, token }) => {
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Telegram WebApp Data
   const tgWebApp = window.Telegram?.WebApp;
   const rawInitData = tgWebApp?.initData;
-  // If rawInitData is empty string or undefined, we are NOT in Telegram (or session is invalid)
   const isTelegramContext = !!rawInitData;
 
-  const handleManualLink = async () => {
-     if (!isTelegramContext) return;
+  const changeVisibility = async (vis: TelegramVisibility) => {
+    setIsUpdating(true);
+    try {
+      const newConfig = await updateTelegramVisibility(token, vis);
+      onUpdateConfig(newConfig);
+    } catch (e) {
+       console.error("Failed to update visibility", e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
-     setIsLinking(true);
-     setLinkError(null);
-     try {
-        const token = localStorage.getItem('s21_auth_token');
-        if (token) {
-           await linkTelegramAccount(token);
-           // After successful link, reload to fetch fresh state/settings
-           window.location.reload(); 
-        } else {
-           setLinkError("No School Token found. Relogin.");
-        }
-     } catch (e: any) {
-        setLinkError(e.message || "Unknown Error");
-     } finally {
-        setIsLinking(false);
-     }
+  const handleUnlink = async () => {
+    if(!confirm("Unlink Telegram account?")) return;
+    setIsUpdating(true);
+    try {
+      await unlinkTelegramAccount(token);
+      onUpdateConfig({ isLinked: false, visibility: 'private' });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   if (loading) {
@@ -71,46 +74,81 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
         </div>
       </div>
 
-      <div className="p-4 space-y-4">
+      <div className="p-4">
          {!isLinked ? (
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 py-2">
                {isTelegramContext ? (
-                  <>
-                     <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
-                        Link your account to receive notifications and quick access.
-                     </p>
-                     
-                     {linkError && (
-                       <div className="bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/50 p-2 rounded-lg break-words">
-                         <p className="text-[9px] font-mono text-red-600 dark:text-red-400 leading-tight">{linkError}</p>
-                       </div>
-                     )}
-
-                     <Button 
-                        onClick={handleManualLink} 
-                        isLoading={isLinking}
-                        className="py-2 text-xs"
-                     >
-                        Connect Telegram
-                     </Button>
-                  </>
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400 text-center leading-relaxed">
+                     Account not linked. It should link automatically upon login.
+                  </p>
                ) : (
-                  <div className="flex flex-col items-center justify-center py-2 opacity-50">
-                     <p className="text-[10px] text-gray-400 italic text-center">
-                        Open this app in Telegram to link your account.
-                     </p>
-                  </div>
+                  <p className="text-[10px] text-gray-400 italic text-center">
+                     Open this app in Telegram to link your account.
+                  </p>
                )}
             </div>
          ) : (
-            <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
-               <div className="flex flex-col">
-                  <span className="text-[8px] font-bold text-gray-400 uppercase">Connected as</span>
-                  <span className="text-[11px] font-black text-gray-800 dark:text-gray-200">
-                      {config?.telegramUsername ? `@${config.telegramUsername}` : (config?.telegramId ? `ID: ${config.telegramId}` : 'Telegram User')}
-                  </span>
+            <div className="space-y-4">
+               {/* Identity Card */}
+               <div className="flex items-center justify-between bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-gray-800">
+                  <div className="flex flex-col">
+                     <span className="text-[8px] font-bold text-gray-400 uppercase">Connected as</span>
+                     <span className="text-[11px] font-black text-gray-800 dark:text-gray-200">
+                         {config?.telegramUsername ? `@${config.telegramUsername}` : (config?.telegramId ? `ID: ${config.telegramId}` : 'Telegram User')}
+                     </span>
+                  </div>
+                  {/* Unlink Action - Kept minimal as per request for "no button", using text link style */}
+                  <button onClick={handleUnlink} disabled={isUpdating} className="text-[8px] font-bold text-red-400 hover:text-red-500 underline opacity-60 hover:opacity-100 transition-opacity">
+                      Unlink
+                  </button>
                </div>
-               <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+
+               {/* Privacy Toggles */}
+               <div className="space-y-2 pt-1">
+                   <span className="text-[8px] font-bold text-gray-400 uppercase ml-1 block mb-1">Privacy & Contact</span>
+                   
+                   {/* Option 1: Public */}
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'public' ? 'bg-primary/5 border-primary/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                       <div className="flex items-center gap-3">
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'public' ? 'border-primary bg-primary' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {config?.visibility === 'public' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           </div>
+                           <div className="flex flex-col">
+                               <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Public</span>
+                               <span className="text-[8px] text-gray-500 dark:text-gray-400">Show username, allow DM</span>
+                           </div>
+                       </div>
+                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'public'} onChange={() => changeVisibility('public')} disabled={isUpdating} />
+                   </label>
+
+                   {/* Option 2: Notify Only */}
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'notify_only' ? 'bg-amber-500/5 border-amber-500/30' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                       <div className="flex items-center gap-3">
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'notify_only' ? 'border-amber-500 bg-amber-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {config?.visibility === 'notify_only' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           </div>
+                           <div className="flex flex-col">
+                               <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Notify Only</span>
+                               <span className="text-[8px] text-gray-500 dark:text-gray-400">Hide username, bot notify</span>
+                           </div>
+                       </div>
+                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'notify_only'} onChange={() => changeVisibility('notify_only')} disabled={isUpdating} />
+                   </label>
+
+                   {/* Option 3: Private */}
+                   <label className={`flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all ${config?.visibility === 'private' ? 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700' : 'bg-transparent border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/30'}`}>
+                       <div className="flex items-center gap-3">
+                           <div className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center ${config?.visibility === 'private' ? 'border-gray-500 bg-gray-500' : 'border-gray-300 dark:border-gray-600'}`}>
+                               {config?.visibility === 'private' && <div className="w-1 h-1 rounded-full bg-white"></div>}
+                           </div>
+                           <div className="flex flex-col">
+                               <span className="text-[10px] font-black text-gray-800 dark:text-white uppercase">Private</span>
+                               <span className="text-[8px] text-gray-500 dark:text-gray-400">Hidden</span>
+                           </div>
+                       </div>
+                       <input type="radio" name="visibility" className="hidden" checked={config?.visibility === 'private'} onChange={() => changeVisibility('private')} disabled={isUpdating} />
+                   </label>
+               </div>
             </div>
          )}
       </div>
