@@ -24,18 +24,21 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
     const normalizedUsername = username.toLowerCase().trim();
 
     try {
-      // 1. Authenticate
+      // 1. Authenticate with School 21
       const data = await loginUser(normalizedUsername, password);
 
-      // 2. Silent Auto-link if in Telegram WebApp
+      // 2. Auto-link to Telegram if inside WebApp
+      // We check if already linked first, although POST /link is likely idempotent on backend
       if (window.Telegram?.WebApp?.initData) {
         try {
            const settings = await fetchTelegramSettings(data.access_token);
            if (!settings.isLinked) {
-              await linkTelegramAccount(data.access_token, normalizedUsername, password);
+              // Send ONLY the token. Backend validates it and binds to Telegram ID from initData header.
+              await linkTelegramAccount(data.access_token);
            }
         } catch (ignored) {
-           // Silently ignore errors, Dashboard will handle retry or display status
+           console.warn("Auto-link failed", ignored);
+           // We do not block login if linking fails, but it would be nice to show a toast/notification
         }
       }
       

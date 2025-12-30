@@ -47,15 +47,27 @@ export const refreshUserToken = async (refreshToken: string): Promise<AuthRespon
   return data;
 };
 
-export const fetchData = async (endpoint: string, token: string, options: RequestInit = {}): Promise<any> => {
-  const makeRequest = async (currentToken: string) => {
+export const fetchData = async (endpoint: string, token: string | null, options: RequestInit = {}): Promise<any> => {
+  const initData = window.Telegram?.WebApp?.initData || '';
+  
+  const makeRequest = async (currentToken: string | null) => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...((options.headers as Record<string, string>) || {}),
+    };
+
+    if (currentToken) {
+      headers['Authorization'] = `Bearer ${currentToken}`;
+    }
+    
+    // Always attach Telegram Init Data if available for backend validation/proxying
+    if (initData) {
+      headers['x-telegram-init-data'] = initData;
+    }
+
     return fetch(`${API_BASE}${endpoint}`, {
       ...options,
-      headers: {
-        'Authorization': `Bearer ${currentToken}`,
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
+      headers,
     });
   };
 
@@ -63,7 +75,13 @@ export const fetchData = async (endpoint: string, token: string, options: Reques
 
   // Global Interceptor Logic for 401
   if (response.status === 401) {
-    console.log("Токен протух (401), пробуем обновить...");
+    // If we are relying solely on Telegram Init Data (no token), 401 means backend rejected InitData or session
+    if (!token && initData) {
+       console.log("Backend rejected Telegram Session (401)");
+       throw new Error('Telegram Session Expired');
+    }
+
+    console.log("Token expired (401), trying refresh...");
     const refreshToken = localStorage.getItem('s21_refresh_token');
     
     if (refreshToken) {
@@ -78,15 +96,14 @@ export const fetchData = async (endpoint: string, token: string, options: Reques
           detail: newAuthData.access_token 
         }));
 
-        // Retry original request with new token
+        // Retry with new token
         response = await makeRequest(newAuthData.access_token);
       } catch (refreshError) {
-        console.error("Токен протух окончательно, идем на логин...", refreshError);
+        console.error("Refresh failed", refreshError);
         window.dispatchEvent(new CustomEvent('s21:session_expired'));
         throw new Error('Session expired');
       }
     } else {
-      console.log("Нет refresh токена, идем на логин...");
       window.dispatchEvent(new CustomEvent('s21:session_expired'));
       throw new Error('Session expired');
     }
@@ -113,24 +130,23 @@ const getTelegramInitData = () => {
   return window.Telegram?.WebApp?.initData || '';
 };
 
-export const fetchTelegramSettings = async (token: string): Promise<TelegramConfig> => {
+// Optional token, because we might call this with just InitData at app start
+export const fetchTelegramSettings = async (token?: string | null): Promise<TelegramConfig> => {
   try {
     const initData = getTelegramInitData();
-    // Pass initData in header for the backend to validate/identify the TG user
-    const data = await fetchData('/v1/telegram/settings', token, {
-      headers: {
-        'x-telegram-init-data': initData
-      }
-    });
+    // Headers are handled in fetchData, including x-telegram-init-data
+    const data = await fetchData('/v1/telegram/settings', token || null);
     
     return {
       isLinked: data.linked,
+      schoolLogin: data.school_login,
       visibility: (data.visibility as TelegramVisibility) || 'private',
-      telegramUsername: data.username, // From Backend DB
-      telegramId: data.telegram_id,    // From Backend DB
-      linkedAt: data.created_at        // From Backend DB
+      telegramUsername: data.username, 
+      telegramId: data.telegram_id,    
+      linkedAt: data.created_at        
     };
   } catch (e: any) {
+    // 404 means not linked
     if (e.message && e.message.includes('404')) {
         return { isLinked: false, visibility: 'private' };
     }
@@ -139,19 +155,15 @@ export const fetchTelegramSettings = async (token: string): Promise<TelegramConf
   }
 };
 
-export const linkTelegramAccount = async (token: string, username?: string, password?: string): Promise<void> => {
+// New flow: Pass school token in body
+export const linkTelegramAccount = async (schoolToken: string): Promise<void> => {
   const initData = getTelegramInitData();
   
-  const body: any = { initData };
-  if (username) body.username = username;
-  if (password) body.password = password;
-
-  await fetchData('/v1/telegram/link', token, {
+  await fetchData('/v1/telegram/link', schoolToken, {
     method: 'POST',
-    headers: {
-      'x-telegram-init-data': initData
-    },
-    body: JSON.stringify(body)
+    body: JSON.stringify({ 
+      school_token: schoolToken 
+    })
   });
 };
 
@@ -159,10 +171,7 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
   const initData = getTelegramInitData();
   await fetchData('/v1/telegram/settings', token, {
     method: 'PUT',
-    headers: {
-      'x-telegram-init-data': initData
-    },
-    body: JSON.stringify({ visibility, initData })
+    body: JSON.stringify({ visibility })
   });
   
   return { 
@@ -173,12 +182,7 @@ export const updateTelegramVisibility = async (token: string, visibility: Telegr
 };
 
 export const unlinkTelegramAccount = async (token: string): Promise<void> => {
-  const initData = getTelegramInitData();
   await fetchData('/v1/telegram/link', token, {
-    method: 'DELETE',
-    headers: {
-      'x-telegram-init-data': initData
-    },
-    body: JSON.stringify({ initData })
+    method: 'DELETE'
   });
 };

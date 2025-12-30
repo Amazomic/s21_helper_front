@@ -28,6 +28,7 @@ export interface TelegramConfig {
   isLinked: boolean;
   telegramId?: number;
   telegramUsername?: string;
+  schoolLogin?: string;
   visibility: TelegramVisibility;
   linkedAt?: string;
 }
