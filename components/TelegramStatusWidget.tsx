@@ -13,6 +13,7 @@ interface TelegramStatusWidgetProps {
 
 export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ config, loading, onUpdateConfig, token }) => {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const tgWebApp = window.Telegram?.WebApp;
   const isTelegramContext = !!tgWebApp?.initData;
@@ -50,7 +51,12 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   };
 
   const handleUnlink = async () => {
-    if(!confirm("Unlink Telegram account?")) return;
+    const confirmed = confirm("Unlink Telegram account?");
+    // Force reset hover state immediately after dialog closes to prevent "stuck" state
+    setIsHovered(false);
+    
+    if(!confirmed) return;
+    
     setIsUpdating(true);
     try {
       await unlinkTelegramAccount(token);
@@ -107,17 +113,26 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                 <button 
                     onClick={handleUnlink}
                     disabled={isUpdating}
-                    className="group relative flex-shrink-0 w-8 h-8 rounded-full bg-[#24A1DE]/10 hover:bg-red-50 text-[#24A1DE] hover:text-red-500 transition-all flex items-center justify-center"
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className={`flex-shrink-0 w-8 h-8 rounded-full transition-all flex items-center justify-center ${
+                        isHovered 
+                        ? 'bg-red-50 text-red-500' 
+                        : 'bg-[#24A1DE]/10 text-[#24A1DE]'
+                    }`}
                     title="Unlink Account"
                 >
-                    {/* Default Icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 group-hover:hidden" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.47-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
-                    </svg>
-                    {/* Hover Unlink Icon */}
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 hidden group-hover:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                    </svg>
+                    {isHovered ? (
+                        /* Unlink Icon */
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                        </svg>
+                    ) : (
+                        /* Telegram Icon */
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.47-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+                        </svg>
+                    )}
                 </button>
 
                 {/* Username */}
