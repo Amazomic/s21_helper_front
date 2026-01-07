@@ -75,8 +75,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         {/* Unified Card Container */}
         <div className="flex flex-col w-full h-full bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             
-            {/* Header - Compact Height */}
-            <div className="flex-none flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-white/5">
+            {/* Header - Compact Height & Matching Background */}
+            <div className="flex-none flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
                <div className="flex items-center">
                  {userData?.className && (
                     <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider pl-1">
