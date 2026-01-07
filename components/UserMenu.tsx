@@ -97,18 +97,18 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-4 scrollbar-hide min-h-0">
           
-          <TelegramStatusWidget 
-            config={telegramConfig} 
-            loading={telegramLoading} 
-            onUpdateConfig={onUpdateTelegramConfig}
-            token={token}
-          />
-
           <UserProfileCard 
             data={userData} 
             points={pointsData} 
             loading={loading.user} 
             error={errors.user} 
+          />
+
+          <TelegramStatusWidget 
+            config={telegramConfig} 
+            loading={telegramLoading} 
+            onUpdateConfig={onUpdateTelegramConfig}
+            token={token}
           />
 
           <ProjectsView 
