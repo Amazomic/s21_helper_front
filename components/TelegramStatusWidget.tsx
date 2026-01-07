@@ -142,7 +142,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                 <button 
                     onClick={handleUnlink}
                     disabled={isUpdating}
-                    className="flex-shrink-0 px-2.5 py-1.5 bg-gray-50 active:bg-red-50 md:hover:bg-red-50 dark:bg-gray-800 dark:active:bg-red-900/20 md:dark:hover:bg-red-900/20 text-gray-400 active:text-red-500 md:hover:text-red-500 dark:text-gray-500 dark:active:text-red-400 md:dark:hover:text-red-400 text-[9px] font-black uppercase tracking-wide rounded-lg transition-all"
+                    className="flex-shrink-0 px-2.5 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-900/10 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 text-[9px] font-black uppercase tracking-wide rounded-lg transition-all"
                 >
                     Unlink
                 </button>
@@ -155,7 +155,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                     disabled={isUpdating}
                     className={`py-1.5 rounded-lg text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                       visibility === 'public' 
-                        ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5' 
+                        ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5' 
                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
                   >
