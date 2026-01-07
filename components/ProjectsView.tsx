@@ -1,6 +1,5 @@
 
 import React, { useMemo, useState } from 'react';
-import { Card } from './ui/Card';
 
 interface Project {
   id: number;
@@ -46,29 +45,28 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
 
   if (isLoading) {
     return (
-      <Card className="h-24 animate-pulse rounded-3xl w-full">
-        <div className="flex justify-between items-center mb-4">
+      <div className="p-3 lg:p-4 animate-pulse w-full">
+        <div className="flex justify-between items-center mb-2">
             <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
             <div className="h-2 w-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
-        <div className="h-10 bg-gray-100 dark:bg-gray-700 rounded opacity-50"></div>
-      </Card>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <Card className="h-24 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl w-full">
+      <div className="p-3 lg:p-4 text-center text-red-500 dark:text-red-400 w-full">
         <p className="text-[9px] font-black uppercase">Projects Error</p>
-      </Card>
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col w-full shadow-2xl border-none overflow-hidden rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
+    <div className="flex flex-col w-full bg-transparent">
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 bg-gray-50 dark:bg-white/5 transition-colors duration-300 cursor-pointer"
+        className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
       >
          <div className="flex items-baseline gap-2.5">
             <h3 className="font-black text-gray-800 dark:text-white group-hover:text-primary dark:group-hover:text-primary text-[10px] lg:text-xs uppercase tracking-[0.2em] transition-colors duration-300">
@@ -87,7 +85,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
       </button>
       
       <div className={`transition-all duration-300 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
-        <div className="px-3 lg:px-4 pt-3 lg:pt-4 pb-3 lg:pb-4 space-y-2">
+        <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
             {activeProjects.length === 0 ? (
                 <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                     No active projects

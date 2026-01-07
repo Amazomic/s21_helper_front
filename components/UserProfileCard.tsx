@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card } from './ui/Card';
 
 interface UserProfileProps {
   data: any;
@@ -12,7 +11,7 @@ interface UserProfileProps {
 export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, loading, error }) => {
   if (loading) {
     return (
-      <Card className="animate-pulse w-full">
+      <div className="animate-pulse w-full">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
           <div className="flex-1 space-y-2">
@@ -20,15 +19,15 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             <div className="h-1.5 bg-gray-200 dark:bg-gray-700 w-1/2 rounded"></div>
           </div>
         </div>
-      </Card>
+      </div>
     );
   }
 
   if (error || !data) {
     return (
-      <Card className="text-center text-red-500 dark:text-red-400 text-[10px] w-full">
+      <div className="text-center text-red-500 dark:text-red-400 text-[10px] w-full">
         <p>Profile Error</p>
-      </Card>
+      </div>
     );
   }
 
@@ -43,14 +42,15 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
   const coalition = data.coalition;
 
   return (
-    <Card className="relative w-full overflow-hidden bg-white dark:bg-gray-900 shadow-md border-none rounded-3xl group transform-gpu">
-      <div className="absolute top-0 right-0 -mt-6 -mr-6 w-20 h-20 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
+    <div className="relative w-full group">
+      {/* Background ambient light - kept subtle */}
+      <div className="absolute top-0 right-0 -mt-2 -mr-2 w-16 h-16 bg-primary/5 rounded-full blur-2xl pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
 
-      <div className="flex flex-col gap-2 lg:gap-4">
+      <div className="flex flex-col gap-2 lg:gap-4 relative z-10">
         {/* Compact Single Line Info Bar */}
         <div className="flex items-stretch gap-1 lg:gap-2">
             {/* Level Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-primary/10 rounded-xl px-1.5 py-1 lg:py-2 min-w-[2.4rem] lg:min-w-[3.2rem] border border-primary/20 shadow-inner">
+            <div className="flex-none flex flex-col items-center justify-center bg-primary/5 dark:bg-primary/10 rounded-xl px-1.5 py-1 lg:py-2 min-w-[2.4rem] lg:min-w-[3.2rem] border border-primary/10 shadow-sm">
                 <span className="text-base lg:text-xl font-black text-primary dark:text-green-400 leading-none tracking-tighter">
                     {levelInteger}
                 </span>
@@ -58,7 +58,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             </div>
 
             {/* Coalition Box */}
-            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-1.5 py-1 border border-gray-100 dark:border-gray-800 shadow-inner min-w-0">
+            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-1.5 py-1 border border-gray-100 dark:border-gray-800/50 shadow-sm min-w-0">
                 <span className="text-[9px] lg:text-xs font-black text-gray-800 dark:text-white truncate w-full text-center leading-tight">
                     {coalition ? coalition.name : 'Freelance'}
                 </span>
@@ -68,7 +68,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             </div>
 
             {/* PRP Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-blue-500/10 shadow-inner">
+            <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-blue-500/10 shadow-sm">
                 <span className="text-[10px] lg:text-xs font-black text-blue-600 dark:text-blue-400 leading-none">
                     {points?.peerReviewPoints || 0}
                 </span>
@@ -76,7 +76,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             </div>
 
             {/* Coins Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-amber-500/10 shadow-inner">
+            <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-amber-500/10 shadow-sm">
                 <span className="text-[10px] lg:text-xs font-black text-amber-500 leading-none">
                     {points?.coins || 0}
                 </span>
@@ -103,6 +103,6 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             </p>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
