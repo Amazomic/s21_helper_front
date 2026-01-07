@@ -69,7 +69,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
       {/* Popover Window */}
       <div 
-        className={`relative mt-[74px] ml-2 sm:ml-4 w-[calc(100%-1rem)] max-w-sm max-h-[calc(100vh-90px)] flex flex-col origin-top-left transition-all duration-200 ease-out transform-gpu ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`relative mt-[74px] ml-2 sm:ml-4 w-[calc(100%-1rem)] sm:max-w-sm max-h-[calc(100vh-90px)] flex flex-col origin-top-left transition-all duration-200 ease-out transform-gpu ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Unified Card Container */}
