@@ -20,7 +20,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   const handleLink = async () => {
     if (!isTelegramContext) {
-      // In web version, open the bot to allow user to connect there
       window.open('https://t.me/s21_helper_bot', '_blank');
       return;
     }
@@ -52,7 +51,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   const handleUnlink = async () => {
     const confirmed = confirm("Unlink Telegram account?");
-    // Force reset hover state immediately after dialog closes to prevent "stuck" state
     setIsHovered(false);
     
     if(!confirmed) return;
@@ -124,7 +122,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
           <div className="flex items-center justify-between gap-2 pl-1">
              {/* Left: Icon (Unlink) + Name */}
              <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
-                {/* Clickable Icon for Unlink */}
                 <button 
                     onClick={handleUnlink}
                     disabled={isUpdating}
@@ -138,21 +135,18 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                     title="Unlink Account"
                 >
                     {isHovered ? (
-                        /* Unlink Icon */
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                         </svg>
                     ) : (
-                        /* Telegram Icon */
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.47-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
                         </svg>
                     )}
                 </button>
 
-                {/* Username & Linked Date */}
                 <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-black text-gray-800 dark:text-white truncate leading-tight">
+                    <span className="text-sm font-black text-gray-800 dark:text-white truncate leading-tight">
                         {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
                     </span>
                     {config?.linkedAt && (

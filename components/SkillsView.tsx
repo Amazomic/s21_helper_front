@@ -33,7 +33,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
 
   if (isLoading) {
     return (
-      <Card className="h-40 animate-pulse rounded-3xl">
+      <Card className="h-40 animate-pulse rounded-3xl w-full">
         <div className="h-2 w-12 bg-gray-200 dark:bg-gray-700 rounded mb-4"></div>
         <div className="flex items-end space-x-1 h-24">
            {[...Array(8)].map((_, i) => (
@@ -46,7 +46,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
 
   if (error) {
     return (
-      <Card className="h-40 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl">
+      <Card className="h-40 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl w-full">
         <p className="text-[9px] font-black uppercase">Skills Error</p>
       </Card>
     );
@@ -54,14 +54,14 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
 
   if (!data?.skills || data.skills.length === 0) {
     return (
-      <Card className="h-40 flex items-center justify-center text-gray-400 rounded-3xl">
+      <Card className="h-40 flex items-center justify-center text-gray-400 rounded-3xl w-full">
         <p className="text-[9px] font-black uppercase">No Skills</p>
       </Card>
     );
   }
 
   return (
-    <div className="flex flex-col shadow-2xl border-none overflow-hidden rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
+    <div className="flex flex-col w-full shadow-2xl border-none overflow-hidden rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 bg-gray-50 dark:bg-white/5 transition-colors duration-300 cursor-pointer"

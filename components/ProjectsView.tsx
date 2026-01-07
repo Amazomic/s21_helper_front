@@ -46,7 +46,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
 
   if (isLoading) {
     return (
-      <Card className="h-24 animate-pulse rounded-3xl">
+      <Card className="h-24 animate-pulse rounded-3xl w-full">
         <div className="flex justify-between items-center mb-4">
             <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
             <div className="h-2 w-8 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -58,14 +58,14 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
 
   if (error) {
     return (
-      <Card className="h-24 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl">
+      <Card className="h-24 flex items-center justify-center text-red-500 dark:text-red-400 rounded-3xl w-full">
         <p className="text-[9px] font-black uppercase">Projects Error</p>
       </Card>
     );
   }
 
   return (
-    <div className="flex flex-col shadow-2xl border-none overflow-hidden rounded-[2rem] bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
+    <div className="flex flex-col w-full shadow-2xl border-none overflow-hidden rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all duration-300 text-gray-900 dark:text-gray-100">
       <button 
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 bg-gray-50 dark:bg-white/5 transition-colors duration-300 cursor-pointer"

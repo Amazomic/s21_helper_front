@@ -12,7 +12,7 @@ interface UserProfileProps {
 export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, loading, error }) => {
   if (loading) {
     return (
-      <Card className="animate-pulse">
+      <Card className="animate-pulse w-full">
         <div className="flex items-center space-x-2">
           <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
           <div className="flex-1 space-y-2">
@@ -26,7 +26,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
 
   if (error || !data) {
     return (
-      <Card className="text-center text-red-500 dark:text-red-400 text-[10px]">
+      <Card className="text-center text-red-500 dark:text-red-400 text-[10px] w-full">
         <p>Profile Error</p>
       </Card>
     );
@@ -43,7 +43,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
   const coalition = data.coalition;
 
   return (
-    <Card className="relative overflow-hidden bg-white dark:bg-gray-900 shadow-md border-none rounded-3xl group transform-gpu">
+    <Card className="relative w-full overflow-hidden bg-white dark:bg-gray-900 shadow-md border-none rounded-3xl group transform-gpu">
       <div className="absolute top-0 right-0 -mt-6 -mr-6 w-20 h-20 bg-primary/5 rounded-full blur-3xl pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
 
       <div className="flex flex-col gap-2 lg:gap-4">
