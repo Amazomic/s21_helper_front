@@ -88,6 +88,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                 placeholder="Enter login"
                 required
                 disabled={loading}
+                autoComplete="username"
               />
             </div>
             
@@ -102,6 +103,12 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
                   placeholder="••••••••"
                   required
                   disabled={loading}
+                  autoComplete="current-password"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck={false}
+                  // This style attempts to enforce disc masking immediately, reducing 'echo' on some mobile WebKit browsers
+                  style={!showPassword ? { WebkitTextSecurity: 'disc', textSecurity: 'disc' } as any : {}}
                 />
                 <button
                   type="button"
