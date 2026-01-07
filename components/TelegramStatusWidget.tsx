@@ -20,7 +20,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   const handleLink = async () => {
     if (!isTelegramContext) {
       // In web version, open the bot to allow user to connect there
-      window.open('https://t.me/School21_Helper_Bot', '_blank');
+      window.open('https://t.me/s21_helper_bot', '_blank');
       return;
     }
     
