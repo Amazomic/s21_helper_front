@@ -80,11 +80,12 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     const date = new Date(dateString);
-    return new Intl.DateTimeFormat('en-GB', { 
-      day: 'numeric', 
-      month: 'short', 
-      year: '2-digit' 
-    }).format(date);
+    const day = date.getDate();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear().toString().slice(-2);
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${day}.${month}.${year} ${hours}:${minutes}`;
   };
 
   return (
@@ -128,13 +129,10 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                             <span className="text-xs font-black text-gray-800 dark:text-white truncate">
                                 {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
                             </span>
-                            <span className="px-1.5 py-px rounded bg-emerald-500/10 border border-emerald-500/20 text-[7px] font-black text-emerald-600 uppercase tracking-tight">
-                                Linked
-                            </span>
                         </div>
                         {config?.linkedAt && (
-                            <span className="text-[8px] text-gray-400 font-bold tracking-tight">
-                                Since {formatDate(config.linkedAt)}
+                            <span className="text-[8px] text-emerald-500 font-bold tracking-tight">
+                                Linked: {formatDate(config.linkedAt)}
                             </span>
                         )}
                     </div>
