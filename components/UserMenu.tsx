@@ -92,19 +92,24 @@ export const UserMenu: React.FC<UserMenuProps> = ({
         </div>
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-y-auto space-y-4 scrollbar-hide min-h-0 pb-4">
+        <div className="flex-1 overflow-y-auto scrollbar-hide min-h-0 pb-4">
           
-          {/* 1. Telegram Block (Separate) */}
-          <TelegramStatusWidget 
-            config={telegramConfig} 
-            loading={telegramLoading} 
-            onUpdateConfig={onUpdateTelegramConfig}
-            token={token}
-          />
-          
-          {/* 2. Unified Stats Block (Profile + Projects + Skills) */}
+          {/* Unified Stats Block (Telegram + Profile + Projects + Skills) */}
           <div className="w-full bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
              
+             {/* Section 0: Telegram */}
+             <div className="p-3 lg:p-4">
+               <TelegramStatusWidget 
+                  config={telegramConfig} 
+                  loading={telegramLoading} 
+                  onUpdateConfig={onUpdateTelegramConfig}
+                  token={token}
+               />
+             </div>
+
+             {/* Divider */}
+             <div className="h-px bg-gray-100 dark:bg-gray-800 mx-4"></div>
+
              {/* Section 1: Profile */}
              <div className="p-3 lg:p-4">
                <UserProfileCard 

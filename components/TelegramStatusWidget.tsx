@@ -83,8 +83,8 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   if (loading) {
     return (
-      <div className="w-full h-14 animate-pulse rounded-3xl bg-white dark:bg-gray-800 border-none shadow-md p-2">
-         <div className="flex items-center gap-3 h-full px-2">
+      <div className="w-full h-10 animate-pulse bg-transparent">
+         <div className="flex items-center gap-3 h-full">
            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
            <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
          </div>
@@ -96,9 +96,9 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   const visibility = config?.visibility || 'public'; 
   
   return (
-    <div className="w-full shadow-md rounded-3xl bg-white dark:bg-gray-900 border-none p-1.5 transition-all">
+    <div className="w-full bg-transparent transition-all">
        {!isLinked ? (
-          <div className="flex items-center justify-between gap-3 px-1">
+          <div className="flex items-center justify-between gap-3">
              <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -119,7 +119,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
              </Button>
           </div>
        ) : (
-          <div className="flex items-center justify-between gap-2 pl-1">
+          <div className="flex items-center justify-between gap-2">
              {/* Left: Icon (Unlink) + Name */}
              <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
                 <button 
