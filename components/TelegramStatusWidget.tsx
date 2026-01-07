@@ -68,6 +68,21 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
     }
   };
 
+  const formatDate = (isoString?: string) => {
+    if (!isoString) return '';
+    try {
+      const date = new Date(isoString);
+      const day = date.getDate();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      return `${day}.${month}.${year} ${hours}:${minutes}`;
+    } catch {
+      return '';
+    }
+  };
+
   if (loading) {
     return (
       <div className="w-full h-14 animate-pulse rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-2">
@@ -135,10 +150,17 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                     )}
                 </button>
 
-                {/* Username */}
-                <span className="text-[10px] font-black text-gray-800 dark:text-white truncate">
-                    {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
-                </span>
+                {/* Username & Linked Date */}
+                <div className="flex flex-col min-w-0">
+                    <span className="text-[10px] font-black text-gray-800 dark:text-white truncate leading-tight">
+                        {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
+                    </span>
+                    {config?.linkedAt && (
+                        <span className="text-[8px] font-bold text-emerald-500 truncate leading-tight">
+                            Linked: {formatDate(config.linkedAt)}
+                        </span>
+                    )}
+                </div>
              </div>
 
              {/* Right: Compact Privacy Controls */}
