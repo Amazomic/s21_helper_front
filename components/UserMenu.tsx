@@ -69,11 +69,11 @@ export const UserMenu: React.FC<UserMenuProps> = ({
 
       {/* Popover Window */}
       <div 
-        className={`relative mt-[74px] mx-2 sm:mx-0 sm:ml-4 w-auto sm:w-[24rem] sm:max-w-sm max-h-[calc(100vh-90px)] flex flex-col origin-top-left transition-all duration-200 ease-out transform-gpu ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+        className={`relative mt-[74px] ml-2 sm:ml-4 w-[calc(100%-1rem)] sm:max-w-sm max-h-[calc(100vh-90px)] flex flex-col origin-top-left transition-all duration-200 ease-out transform-gpu ${isOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Unified Card Container - Matching Project Search Styling */}
-        <div className="flex flex-col w-full h-full bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden ring-1 ring-black/5 dark:ring-white/10">
+        {/* Unified Card Container */}
+        <div className="flex flex-col w-full h-full bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden">
             
             {/* Header - Compact Height & Matching Background */}
             <div className="flex-none flex items-center justify-between px-3 py-2 border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900">
