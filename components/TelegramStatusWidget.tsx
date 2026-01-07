@@ -63,12 +63,12 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   if (loading) {
     return (
-      <div className="h-20 animate-pulse rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-2">
-        <div className="flex justify-between items-center mb-2">
-           <div className="h-6 w-6 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
-           <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+      <div className="w-full h-24 animate-pulse rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-3">
+        <div className="flex justify-between items-center mb-3">
+           <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+           <div className="h-4 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
         </div>
-        <div className="h-6 w-full bg-gray-100 dark:bg-gray-700 rounded"></div>
+        <div className="h-8 w-full bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
       </div>
     );
   }
@@ -87,34 +87,34 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   };
 
   return (
-    <div className="shadow-lg rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-2 transition-all">
+    <div className="w-full shadow-sm rounded-3xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-3 transition-all">
        {!isLinked ? (
-          <div className="flex items-center justify-between gap-2">
-             <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <div className="flex items-center justify-between gap-3">
+             <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
                     </svg>
                 </div>
                 <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-gray-800 dark:text-gray-200">Telegram</span>
-                    <span className="text-[8px] text-gray-400">Not connected</span>
+                    <span className="text-[10px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-wide">Telegram</span>
+                    <span className="text-[9px] text-gray-400 font-medium">Not connected</span>
                 </div>
              </div>
              <Button 
                 onClick={handleLink} 
                 isLoading={isUpdating} 
                 disabled={!isTelegramContext}
-                className="w-auto px-3 py-1 h-7 text-[9px] font-bold uppercase"
+                className="w-auto px-4 py-1.5 h-8 text-[9px] font-black uppercase tracking-wider"
              >
                 Connect
              </Button>
           </div>
        ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
              {/* Header: Icon, Info, Action */}
              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 min-w-0">
+                <div className="flex items-center gap-2.5 min-w-0">
                     {/* Icon */}
                     <div className="w-8 h-8 flex-shrink-0 rounded-full bg-[#24A1DE]/10 text-[#24A1DE] flex items-center justify-center">
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -128,37 +128,34 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                             <span className="text-xs font-black text-gray-800 dark:text-white truncate">
                                 {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
                             </span>
-                            <span className="px-1 py-px rounded bg-emerald-500/10 border border-emerald-500/20 text-[7px] font-black text-emerald-600 uppercase tracking-tight">
+                            <span className="px-1.5 py-px rounded bg-emerald-500/10 border border-emerald-500/20 text-[7px] font-black text-emerald-600 uppercase tracking-tight">
                                 Linked
                             </span>
                         </div>
                         {config?.linkedAt && (
-                            <span className="text-[8px] text-gray-400 font-medium">
+                            <span className="text-[8px] text-gray-400 font-bold tracking-tight">
                                 Since {formatDate(config.linkedAt)}
                             </span>
                         )}
                     </div>
                 </div>
 
-                {/* Unlink Action */}
+                {/* Unlink Action - Button */}
                 <button 
                     onClick={handleUnlink}
                     disabled={isUpdating}
-                    className="text-gray-300 hover:text-red-400 transition-colors p-1"
-                    title="Unlink Account"
+                    className="flex-shrink-0 px-2.5 py-1.5 bg-gray-50 hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-900/20 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 text-[9px] font-black uppercase tracking-wide rounded-lg transition-all"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
+                    Unlink
                 </button>
              </div>
 
              {/* Privacy Segmented Control */}
-             <div className="grid grid-cols-3 gap-0.5 p-0.5 bg-gray-100 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+             <div className="grid grid-cols-3 gap-1 p-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800/50">
                   <button
                     onClick={() => changeVisibility('public')}
                     disabled={isUpdating}
-                    className={`py-1 rounded-[5px] text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
+                    className={`py-1.5 rounded-lg text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                       visibility === 'public' 
                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5' 
                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -170,7 +167,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                   <button
                     onClick={() => changeVisibility('notify_only')}
                     disabled={isUpdating}
-                    className={`py-1 rounded-[5px] text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
+                    className={`py-1.5 rounded-lg text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                       visibility === 'notify_only' 
                         ? 'bg-white dark:bg-gray-700 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-black/5' 
                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
@@ -182,7 +179,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
                   <button
                     onClick={() => changeVisibility('private')}
                     disabled={isUpdating}
-                    className={`py-1 rounded-[5px] text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
+                    className={`py-1.5 rounded-lg text-[8px] font-bold uppercase transition-all flex items-center justify-center gap-1 ${
                       visibility === 'private' 
                         ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm ring-1 ring-black/5' 
                         : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'
