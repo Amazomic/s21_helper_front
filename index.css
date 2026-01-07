@@ -17,7 +17,18 @@
   }
 }
 
-/* Custom scrollbar for JSON viewer */
+/* Hide main window scrollbar but allow scrolling */
+html {
+  scrollbar-width: none; /* Firefox */
+}
+body {
+  -ms-overflow-style: none; /* IE and Edge */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+/* Custom scrollbar for internal elements (like JSON viewer) */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
