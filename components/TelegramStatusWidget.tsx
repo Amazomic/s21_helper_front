@@ -85,8 +85,8 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   if (loading) {
     return (
-      <div className="w-full h-14 animate-pulse rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-2">
-         <div className="flex items-center gap-3 h-full">
+      <div className="w-full h-14 animate-pulse rounded-3xl bg-white dark:bg-gray-800 border-none shadow-md p-2">
+         <div className="flex items-center gap-3 h-full px-2">
            <div className="h-8 w-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
            <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
          </div>
@@ -98,9 +98,9 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
   const visibility = config?.visibility || 'public'; 
   
   return (
-    <div className="w-full shadow-sm rounded-2xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-2.5 transition-all">
+    <div className="w-full shadow-md rounded-3xl bg-white dark:bg-gray-900 border-none p-1.5 transition-all">
        {!isLinked ? (
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3 px-1">
              <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
@@ -121,7 +121,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
              </Button>
           </div>
        ) : (
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 pl-1">
              {/* Left: Icon (Unlink) + Name */}
              <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
                 {/* Clickable Icon for Unlink */}
@@ -152,11 +152,11 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
                 {/* Username & Linked Date */}
                 <div className="flex flex-col min-w-0">
-                    <span className="text-[10px] font-black text-gray-800 dark:text-white truncate leading-tight">
+                    <span className="text-xs font-black text-gray-800 dark:text-white truncate leading-tight">
                         {config?.telegramUsername ? `@${config.telegramUsername}` : 'Linked'}
                     </span>
                     {config?.linkedAt && (
-                        <span className="text-[8px] font-bold text-emerald-500 truncate leading-tight">
+                        <span className="text-[9px] font-bold text-emerald-500 truncate leading-tight">
                             Linked: {formatDate(config.linkedAt)}
                         </span>
                     )}
@@ -164,7 +164,7 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
              </div>
 
              {/* Right: Compact Privacy Controls */}
-             <div className="flex bg-gray-50 dark:bg-gray-800 p-0.5 rounded-lg flex-shrink-0">
+             <div className="flex bg-gray-50 dark:bg-gray-800 p-0.5 rounded-xl flex-shrink-0">
                   <button
                     onClick={() => changeVisibility('public')}
                     disabled={isUpdating}
