@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { UserProfileCard } from './UserProfileCard';
 import { ProjectsView } from './ProjectsView';
 import { SkillsView } from './SkillsView';
+import { TelegramStatusWidget } from './TelegramStatusWidget';
+import { TelegramConfig } from '../types';
 
 interface UserMenuProps {
   isOpen: boolean;
@@ -23,6 +25,9 @@ interface UserMenuProps {
     skills: string | null;
   };
   onLogout: () => void;
+  telegramConfig: TelegramConfig | null;
+  telegramLoading: boolean;
+  onUpdateTelegramConfig: (newConfig: TelegramConfig | null) => void;
 }
 
 export const UserMenu: React.FC<UserMenuProps> = ({
@@ -34,7 +39,10 @@ export const UserMenu: React.FC<UserMenuProps> = ({
   skillsData,
   token,
   loading,
-  errors
+  errors,
+  telegramConfig,
+  telegramLoading,
+  onUpdateTelegramConfig
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -93,6 +101,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({
             points={pointsData} 
             loading={loading.user} 
             error={errors.user} 
+          />
+
+          <TelegramStatusWidget 
+            config={telegramConfig} 
+            loading={telegramLoading} 
+            onUpdateConfig={onUpdateTelegramConfig}
+            token={token}
           />
 
           <ProjectsView 

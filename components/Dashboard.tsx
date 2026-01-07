@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fetchData, fetchTelegramSettings } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
-import { TelegramStatusWidget } from './TelegramStatusWidget';
 import { DebugView } from './DebugView';
 import { UserMenu } from './UserMenu';
 import { TelegramConfig } from '../types';
@@ -284,26 +283,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
           <div className="max-w-5xl mx-auto animate-in fade-in duration-500">
-             <div className="flex flex-col gap-6 items-start lg:grid lg:grid-cols-3">
-               
-               {/* Telegram Status Widget */}
-               <div className="w-full lg:col-span-1 lg:order-last">
-                 <TelegramStatusWidget 
-                   config={telegramConfig} 
-                   loading={telegramLoading} 
-                   onUpdateConfig={handleConfigUpdate}
-                   token={token}
-                 />
-               </div>
-
-               {/* Project Search */}
-               <div className="w-full lg:col-span-2">
+             {/* Main Content: Just Project Search Now */}
+             <div className="w-full">
                  <ProjectParticipantsSearch 
                     token={token} 
                     campusId={userData?.campusId || userData?.campus?.id} 
                   />
-               </div>
-
              </div>
           </div>
         ) : (
@@ -339,6 +324,9 @@ export const Dashboard: React.FC<DashboardProps> = ({
           skills: skillsError
         }}
         onLogout={onLogout}
+        telegramConfig={telegramConfig}
+        telegramLoading={telegramLoading}
+        onUpdateTelegramConfig={handleConfigUpdate}
       />
 
       <ResultModal isOpen={modalOpen} onClose={() => setModalOpen(false)} data={modalData} error={modalError} title={modalTitle} />
