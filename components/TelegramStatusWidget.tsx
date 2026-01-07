@@ -19,7 +19,8 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   const handleLink = async () => {
     if (!isTelegramContext) {
-      alert("Please open this app inside Telegram to link your account.");
+      // In web version, open the bot to allow user to connect there
+      window.open('https://t.me/School21_Helper_Bot', '_blank');
       return;
     }
     
@@ -104,7 +105,6 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
              <Button 
                 onClick={handleLink} 
                 isLoading={isUpdating} 
-                disabled={!isTelegramContext}
                 className="w-auto px-4 py-1.5 h-8 text-[9px] font-black uppercase tracking-wider"
              >
                 Connect
