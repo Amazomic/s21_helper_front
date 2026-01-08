@@ -84,24 +84,27 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
          </div>
       </button>
       
-      <div className={`transition-all duration-300 ease-in-out origin-top overflow-hidden ${isCollapsed ? 'max-h-0 opacity-0' : 'max-h-[400px] opacity-100'}`}>
-        <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
-            {activeProjects.length === 0 ? (
-                <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                    No active projects
-                </div>
-            ) : (
-                activeProjects.map((p) => (
-                    <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                        <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2" title={p.title}>
-                            {p.title}
-                        </span>
-                        <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)} whitespace-nowrap`}>
-                            {formatStatus(p.status)}
-                        </span>
-                    </div>
-                ))
-            )}
+      {/* Updated to use Grid Rows for smooth auto-height animation */}
+      <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
+        <div className="overflow-hidden">
+          <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
+              {activeProjects.length === 0 ? (
+                  <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                      No active projects
+                  </div>
+              ) : (
+                  activeProjects.map((p) => (
+                      <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
+                          <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2" title={p.title}>
+                              {p.title}
+                          </span>
+                          <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)} whitespace-nowrap`}>
+                              {formatStatus(p.status)}
+                          </span>
+                      </div>
+                  ))
+              )}
+          </div>
         </div>
       </div>
     </div>
