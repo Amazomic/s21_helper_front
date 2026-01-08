@@ -127,7 +127,8 @@ export const UserMenu: React.FC<UserMenuProps> = ({
                  <ProjectsView 
                     data={projectsData} 
                     isLoading={loading.projects} 
-                    error={errors.projects} 
+                    error={errors.projects}
+                    onProjectClick={onClose}
                  />
 
                  {/* Divider */}

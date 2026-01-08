@@ -12,9 +12,10 @@ interface ProjectsViewProps {
   data: { projects: Project[] } | Project[] | null;
   isLoading: boolean;
   error?: string | null;
+  onProjectClick?: () => void;
 }
 
-export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, error }) => {
+export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, error, onProjectClick }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
 
   const activeProjects = useMemo(() => {
@@ -41,6 +42,18 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
 
   const formatStatus = (status: string) => {
     return status.replace(/_/g, ' ');
+  };
+
+  const handleProjectSelect = (p: Project) => {
+    // Dispatch custom event for the search component
+    window.dispatchEvent(new CustomEvent('s21:select_project', { 
+        detail: { id: p.id, code: p.title } 
+    }));
+    
+    // Trigger callback (usually to close the menu)
+    if (onProjectClick) {
+        onProjectClick();
+    }
   };
 
   if (isLoading) {
@@ -94,14 +107,18 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
                   </div>
               ) : (
                   activeProjects.map((p) => (
-                      <div key={p.id} className="flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800">
-                          <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2" title={p.title}>
+                      <button 
+                        key={p.id} 
+                        onClick={() => handleProjectSelect(p)}
+                        className="w-full flex items-center justify-between p-2 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 hover:bg-white dark:hover:bg-gray-700 hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-sm transition-all cursor-pointer group/item text-left"
+                      >
+                          <span className="text-[10px] lg:text-xs font-bold text-gray-700 dark:text-gray-200 truncate pr-2 group-hover/item:text-primary transition-colors" title={p.title}>
                               {p.title}
                           </span>
                           <span className={`text-[8px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)} whitespace-nowrap`}>
                               {formatStatus(p.status)}
                           </span>
-                      </div>
+                      </button>
                   ))
               )}
           </div>

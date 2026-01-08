@@ -50,6 +50,27 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
   const statuses = ['ASSIGNED', 'REGISTERED', 'IN_PROGRESS', 'IN_REVIEWS', 'ACCEPTED', 'FAILED'];
 
+  // Listen for project selection from other components (e.g. UserMenu)
+  useEffect(() => {
+    const handleSelection = (e: CustomEvent) => {
+      const { id, code } = e.detail;
+      setQuery(code);
+      setSelectedProjectId(id);
+      // Ensure dropdowns are closed and user sees result
+      setShowSuggestions(false);
+      setShowCampusDropdown(false);
+      // Scroll to this component
+      if (containerRef.current) {
+          containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    };
+
+    window.addEventListener('s21:select_project', handleSelection as EventListener);
+    return () => {
+      window.removeEventListener('s21:select_project', handleSelection as EventListener);
+    };
+  }, []);
+
   // Check cache presence
   useEffect(() => {
     const checkAndLoadCache = async () => {
