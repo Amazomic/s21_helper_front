@@ -249,6 +249,21 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     setShowSuggestions(false);
   };
 
+  const handleManualIdSearch = () => {
+    const numericId = parseInt(query.trim(), 10);
+    if (!isNaN(numericId) && numericId > 0) {
+      setSelectedProjectId(numericId);
+      setShowSuggestions(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+       handleManualIdSearch();
+       (e.target as HTMLInputElement).blur();
+    }
+  };
+
   const handleViewParticipant = async (login: string) => {
     setIsModalOpen(true);
     setModalLoading(true);
@@ -470,10 +485,22 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     value={query}
                     onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-                    placeholder="Project code..."
-                    disabled={projects.length === 0}
-                    className={`w-full pl-8 lg:pl-10 pr-3 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner ${projects.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Project code or ID..."
+                    className="w-full pl-8 lg:pl-10 pr-12 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
                   />
+                  
+                  {/^\d+$/.test(query.trim()) && (
+                     <div className="absolute inset-y-0 right-1.5 flex items-center z-20">
+                        <button
+                          onClick={handleManualIdSearch}
+                          className="px-2 py-1 rounded-lg bg-white dark:bg-gray-700 text-primary dark:text-gray-200 border border-gray-200 dark:border-gray-600 hover:bg-primary hover:text-white dark:hover:bg-primary hover:border-primary transition-all text-[9px] font-black uppercase shadow-sm"
+                          title="Search by ID"
+                        >
+                          ID
+                        </button>
+                     </div>
+                  )}
                   
                   {showSuggestions && suggestions.length > 0 && (
                     <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl lg:rounded-2xl shadow-xl max-h-48 lg:max-h-72 overflow-hidden animate-in fade-in duration-200">
