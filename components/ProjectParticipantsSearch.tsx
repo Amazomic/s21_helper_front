@@ -92,8 +92,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
         return next;
       });
 
-      // Fetch in parallel (Simulating Batch Request)
-      // Ideally, backend should support POST /v1/telegram/peers/batch { logins: [] }
       const newStatuses: Record<string, PeerTelegramInfo> = {};
       
       await Promise.all(missingLogins.map(async (login) => {
@@ -206,6 +204,11 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const suggestions = useMemo(() => {
     const term = query.toLowerCase().trim();
     if (term.length < 2) return [];
+    
+    // Check if exact match ID is found, if so, and query matches code, don't show suggestions (avoid persist)
+    const exactIdMatch = projects.find(p => String(p.id) === term);
+    if (exactIdMatch) return [];
+    
     const selected = projects.find(p => p.id === selectedProjectId);
     if (selected && query === selected.code) return [];
 
@@ -217,7 +220,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       .slice(0, 10);
   }, [query, projects, selectedProjectId]);
 
-  // Helper to get project Name if query matches an ID
+  // Debug-style badge helper
   const getProjectNameBadge = () => {
      const trimmed = query.trim();
      if (!trimmed) return null;
@@ -245,7 +248,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     }
   }, [token]);
 
-  // Execute Search Manually
   const executeSearch = () => {
     let pid = selectedProjectId;
 
@@ -258,8 +260,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
     if (pid) {
         fetchParticipants(pid, selectedStatus, selectedCampusId);
-    } else {
-        // Optional: you can show an error or just do nothing
     }
   };
 
@@ -323,10 +323,9 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const renderTelegramAction = (login: string) => {
     const info = peerStatuses[login];
     
-    if (!info) return null; // Still loading or not fetched
-    if (!info.found) return null; // No Telegram linked
+    if (!info) return null; 
+    if (!info.found) return null; 
 
-    // Case 1: Public -> Link to Telegram
     if (info.can_message && info.telegram_username) {
       return (
         <a 
@@ -345,7 +344,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       );
     }
 
-    // Case 2: Notify Only -> Notify Button
     if (info.can_notify) {
       const isSending = notifyingPeer === login;
       return (
@@ -369,7 +367,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       );
     }
 
-    // Case 3: Private but Linked -> Badge only
     return (
       <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700 opacity-60">
          <span className="text-[9px] font-black uppercase tracking-tight">Linked</span>
@@ -394,7 +391,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                 <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
               </div>
               
-              {/* Cache Controls */}
               <div className="flex-shrink-0 flex items-center gap-2 lg:gap-3">
                 <div className="flex items-center gap-2 pl-2 lg:pl-3">
                     {isCacheLoading ? (
@@ -438,7 +434,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                 {/* Campus Filter */}
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-2.5 lg:left-4 flex items-center pointer-events-none z-10">
-                    <svg className="w-3 h-3 lg:w-4 lg:h-4 text-primary opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-3 h-3 lg:w-4 lg:h-4 text-indigo-500 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                     </svg>
                   </div>
@@ -446,7 +442,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   <button
                     onClick={() => setShowCampusDropdown(!showCampusDropdown)}
                     disabled={campuses.length === 0}
-                    className={`relative w-full text-left pl-8 lg:pl-10 pr-8 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all dark:text-white cursor-pointer shadow-inner flex items-center ${campuses.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
+                    className={`relative w-full text-left pl-8 lg:pl-10 pr-8 py-2.5 lg:py-3 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-[10px] lg:text-xs font-black outline-none focus:border-indigo-500 transition-all cursor-pointer flex items-center ${campuses.length === 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''}`}
                   >
                     <span className="truncate">
                       {selectedCampusId 
@@ -461,24 +457,22 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   </button>
 
                   {showCampusDropdown && (
-                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl lg:rounded-2xl shadow-xl max-h-60 overflow-hidden animate-in fade-in duration-200">
+                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-hidden animate-in fade-in duration-200">
                       <div className="p-1 lg:p-2 overflow-y-auto max-h-60 custom-scrollbar">
                         <button
                           onClick={() => { setSelectedCampusId(''); setShowCampusDropdown(false); }}
-                          className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-lg lg:rounded-xl transition-all flex items-center justify-between mb-0.5 group ${!selectedCampusId ? 'bg-primary/10' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                          className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-md transition-all flex items-center justify-between mb-0.5 group ${!selectedCampusId ? 'bg-indigo-50 dark:bg-indigo-900/30' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                         >
-                           <span className={`text-[10px] lg:text-xs font-black truncate ${!selectedCampusId ? 'text-primary' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>All Campuses</span>
-                           {!selectedCampusId && <span className="text-primary text-[10px]">●</span>}
+                           <span className={`text-[10px] lg:text-xs font-black truncate ${!selectedCampusId ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>All Campuses</span>
                         </button>
                         
                         {campuses.map(c => (
                           <button
                             key={c.id}
                             onClick={() => { setSelectedCampusId(c.id); setShowCampusDropdown(false); }}
-                            className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-lg lg:rounded-xl transition-all flex items-center justify-between mb-0.5 group ${selectedCampusId === c.id ? 'bg-primary/10' : 'hover:bg-gray-100 dark:hover:bg-white/5'}`}
+                            className={`w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 rounded-md transition-all flex items-center justify-between mb-0.5 group ${selectedCampusId === c.id ? 'bg-indigo-50 dark:bg-indigo-900/30' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                           >
-                             <span className={`text-[10px] lg:text-xs font-black truncate ${selectedCampusId === c.id ? 'text-primary' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>{c.shortName}</span>
-                             {selectedCampusId === c.id && <span className="text-primary text-[10px]">●</span>}
+                             <span className={`text-[10px] lg:text-xs font-black truncate ${selectedCampusId === c.id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white'}`}>{c.shortName}</span>
                           </button>
                         ))}
                       </div>
@@ -486,12 +480,10 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   )}
                 </div>
 
-                {/* Project Search (Updated Style) */}
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-2.5 lg:left-4 flex items-center pointer-events-none z-10">
-                    <svg className="w-3 h-3 lg:w-4 lg:h-4 text-primary opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                {/* Project Search (DEBUG STYLE) */}
+                <div className="relative group w-full">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
+                    <span className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider hidden sm:block mr-2">PROJECTID / COURSEID</span>
                   </div>
                   
                   <input
@@ -500,13 +492,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
-                    placeholder="Project code or ID..."
-                    className="w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black font-mono outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
+                    placeholder="e.g. 63932 or 'DO14_Final'"
+                    className="w-full pl-4 sm:pl-[140px] pr-20 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs"
+                    autoComplete="off"
                   />
                   
                   {/* Badge showing project name inside input if ID matches */}
                   {badgeName && (
-                    <div className="absolute right-9 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded text-[8px] font-bold text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 pointer-events-none truncate max-w-[80px]">
+                    <div className="absolute right-10 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 pointer-events-none truncate max-w-[100px]">
                        {badgeName}
                     </div>
                   )}
@@ -515,36 +508,34 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   <div className="absolute inset-y-1 right-1 flex items-center z-20">
                     <button
                       onClick={executeSearch}
-                      className="h-full aspect-square flex items-center justify-center rounded-lg lg:rounded-xl bg-primary hover:bg-primary-dark text-white transition-all shadow-sm active:scale-95 group/btn"
+                      className="h-full aspect-square flex items-center justify-center rounded-md bg-indigo-500 hover:bg-indigo-600 text-white transition-all shadow-sm active:scale-95 group/btn"
                       title="Search"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-active/btn:scale-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 group-active/btn:scale-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                       </svg>
                     </button>
                   </div>
                   
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg lg:rounded-xl shadow-xl max-h-48 lg:max-h-72 overflow-hidden animate-in fade-in duration-200">
-                      <div className="overflow-y-auto max-h-48 lg:max-h-72 custom-scrollbar">
-                        {suggestions.map((p) => (
-                          <div 
-                              key={`${p.id}-${p.code}`} 
-                              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
-                              onMouseDown={(e) => {
-                                  e.preventDefault(); 
-                                  handleSelectProject(p);
-                              }}
-                          >
-                              <div className="flex flex-col max-w-[70%]">
-                                  <span className="text-[10px] lg:text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-primary transition-colors truncate">{p.code}</span>
-                                  <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                          {suggestions.map(p => (
+                              <div 
+                                  key={`${p.id}-${p.code}`} 
+                                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                                  onMouseDown={(e) => {
+                                      e.preventDefault(); 
+                                      handleSelectProject(p);
+                                  }}
+                              >
+                                  <div className="flex flex-col max-w-[70%]">
+                                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
+                                      <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                                  </div>
+                                  <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">#{p.id}</span>
                               </div>
-                              <span className="text-[9px] font-mono font-bold bg-primary/10 text-primary dark:text-primary-dark px-1.5 py-0.5 rounded border border-primary/20">#{p.id}</span>
-                          </div>
-                        ))}
+                          ))}
                       </div>
-                    </div>
                   )}
                 </div>
               </div>
@@ -557,8 +548,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     onClick={() => setSelectedStatus(selectedStatus === s ? '' : s)}
                     className={`px-1.5 lg:px-3 py-1 lg:py-2 rounded-lg lg:rounded-xl text-[7px] lg:text-[9px] font-black transition-all border uppercase tracking-tighter ${
                       selectedStatus === s 
-                        ? 'bg-primary text-white border-primary shadow-sm' 
-                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 lg:hover:border-primary/30 lg:hover:text-primary dark:lg:hover:text-primary'
+                        ? 'bg-indigo-500 text-white border-indigo-500 shadow-sm' 
+                        : 'bg-white dark:bg-gray-800 text-gray-400 border-gray-100 dark:border-gray-700 lg:hover:border-indigo-500/30 lg:hover:text-indigo-500 dark:lg:hover:text-indigo-400'
                     }`}
                   >
                     {s}
@@ -571,7 +562,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
             <div className="min-h-[30px] lg:min-h-[100px] px-0.5">
               {isLoading && (
                 <div className="flex flex-col items-center py-2 lg:py-8">
-                  <div className="w-4 h-4 lg:w-8 lg:h-8 border-2 lg:border-4 border-primary/10 border-t-primary rounded-full animate-spin mb-1 lg:mb-3"></div>
+                  <div className="w-4 h-4 lg:w-8 lg:h-8 border-2 lg:border-4 border-indigo-500/10 border-t-indigo-500 rounded-full animate-spin mb-1 lg:mb-3"></div>
                   <span className="text-[6px] lg:text-[10px] font-black text-gray-400 uppercase tracking-widest">Searching...</span>
                 </div>
               )}
@@ -583,15 +574,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                       <button 
                         key={`${idx}-${login}`} 
                         onClick={() => handleViewParticipant(login)}
-                        className="w-full flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-md transition-all group shadow-sm cursor-pointer text-left"
+                        className="w-full flex items-center justify-between p-1.5 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-indigo-500/30 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-md transition-all group shadow-sm cursor-pointer text-left"
                       >
                         <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight pl-1 truncate max-w-[40%]">{login}</span>
                         
                         <div className="flex items-center gap-2">
-                           {/* Telegram Status Actions */}
                            {renderTelegramAction(login)}
 
-                           <div className="text-gray-300 group-hover:text-primary transition-colors">
+                           <div className="text-gray-300 group-hover:text-indigo-500 transition-colors">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                               </svg>
