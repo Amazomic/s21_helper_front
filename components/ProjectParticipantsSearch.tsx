@@ -217,6 +217,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       .slice(0, 10);
   }, [query, projects, selectedProjectId]);
 
+  // Helper to get project Name if query matches an ID
+  const getProjectNameBadge = () => {
+     const trimmed = query.trim();
+     if (!trimmed) return null;
+     const project = projects.find(p => String(p.id) === trimmed);
+     return project ? project.code : null;
+  };
+
   const fetchParticipants = useCallback(async (projectId: number, status: string, cId: string) => {
     setIsLoading(true);
     setError(null);
@@ -372,6 +380,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     );
   };
 
+  const badgeName = getProjectNameBadge();
+
   return (
     <>
       <div ref={containerRef} className="w-full">
@@ -476,13 +486,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   )}
                 </div>
 
-                {/* Project Search */}
+                {/* Project Search (Updated Style) */}
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-2.5 lg:left-4 flex items-center pointer-events-none z-10">
                     <svg className="w-3 h-3 lg:w-4 lg:h-4 text-primary opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
                   </div>
+                  
                   <input
                     type="text"
                     value={query}
@@ -490,9 +501,16 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
                     placeholder="Project code or ID..."
-                    className="w-full pl-8 lg:pl-10 pr-12 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
+                    className="w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black font-mono outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
                   />
                   
+                  {/* Badge showing project name inside input if ID matches */}
+                  {badgeName && (
+                    <div className="absolute right-9 top-1/2 -translate-y-1/2 px-1.5 py-0.5 bg-white dark:bg-gray-700 rounded text-[8px] font-bold text-gray-500 dark:text-gray-300 border border-gray-200 dark:border-gray-600 pointer-events-none truncate max-w-[80px]">
+                       {badgeName}
+                    </div>
+                  )}
+
                   {/* SEARCH BUTTON */}
                   <div className="absolute inset-y-1 right-1 flex items-center z-20">
                     <button
@@ -507,22 +525,23 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   </div>
                   
                   {showSuggestions && suggestions.length > 0 && (
-                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-xl lg:rounded-2xl shadow-xl max-h-48 lg:max-h-72 overflow-hidden animate-in fade-in duration-200">
-                      <div className="p-1 lg:p-2 overflow-y-auto max-h-48 lg:max-h-72 custom-scrollbar">
+                    <div className="absolute z-[100] w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg lg:rounded-xl shadow-xl max-h-48 lg:max-h-72 overflow-hidden animate-in fade-in duration-200">
+                      <div className="overflow-y-auto max-h-48 lg:max-h-72 custom-scrollbar">
                         {suggestions.map((p) => (
-                          <button
-                            key={`${p.id}-${p.code}`}
-                            onClick={() => handleSelectProject(p)}
-                            className="w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 hover:bg-primary/10 rounded-lg lg:rounded-xl transition-all flex justify-between items-center mb-0.5 group"
+                          <div 
+                              key={`${p.id}-${p.code}`} 
+                              className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                              onMouseDown={(e) => {
+                                  e.preventDefault(); 
+                                  handleSelectProject(p);
+                              }}
                           >
-                            <div className="flex flex-col min-w-0 mr-2">
-                              <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-gray-200 truncate group-hover:text-primary transition-colors">{p.code}</span>
-                              <span className="text-[6px] lg:text-[8px] text-gray-400 font-bold uppercase truncate">{p.name}</span>
-                            </div>
-                            <div className="flex-shrink-0 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
-                               <span className="text-[8px] font-mono font-bold text-gray-400 dark:text-gray-500 group-hover:text-primary/70">#{p.id}</span>
-                            </div>
-                          </button>
+                              <div className="flex flex-col max-w-[70%]">
+                                  <span className="text-[10px] lg:text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-primary transition-colors truncate">{p.code}</span>
+                                  <span className="text-[8px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                              </div>
+                              <span className="text-[9px] font-mono font-bold bg-primary/10 text-primary dark:text-primary-dark px-1.5 py-0.5 rounded border border-primary/20">#{p.id}</span>
+                          </div>
                         ))}
                       </div>
                     </div>
