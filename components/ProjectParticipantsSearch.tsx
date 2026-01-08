@@ -42,6 +42,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [isCacheLoading, setIsCacheLoading] = useState(false);
   
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalLoading, setModalLoading] = useState(false);
@@ -85,7 +86,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       
       if (missingLogins.length === 0) return;
 
-      // Mark as loading to prevent duplicate fetches
       setLoadingStatuses(prev => {
         const next = { ...prev };
         missingLogins.forEach(l => next[l] = true);
@@ -205,28 +205,29 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     const term = query.toLowerCase().trim();
     if (term.length < 2) return [];
     
-    // Check if exact match ID is found, if so, and query matches code, don't show suggestions (avoid persist)
-    const exactIdMatch = projects.find(p => String(p.id) === term);
-    if (exactIdMatch) return [];
-    
-    const selected = projects.find(p => p.id === selectedProjectId);
-    if (selected && query === selected.code) return [];
+    // If we have a selected project that matches the current query (display mode), don't show suggestions
+    if (selectedProjectId) {
+         const selected = projects.find(p => p.id === selectedProjectId);
+         if (selected && (selected.code === query || String(selected.id) === query)) {
+             return [];
+         }
+    }
 
     return projects
       .filter((p) => 
         p.code.toLowerCase().includes(term) || 
-        p.name.toLowerCase().includes(term)
+        p.name.toLowerCase().includes(term) ||
+        String(p.id).includes(term)
       )
       .slice(0, 10);
   }, [query, projects, selectedProjectId]);
 
-  // Debug-style badge helper
-  const getProjectNameBadge = () => {
-     const trimmed = query.trim();
-     if (!trimmed) return null;
-     const project = projects.find(p => String(p.id) === trimmed);
-     return project ? project.code : null;
-  };
+  const activeProject = useMemo(() => {
+      if (selectedProjectId) {
+          return projects.find(p => p.id === selectedProjectId);
+      }
+      return null;
+  }, [selectedProjectId, projects]);
 
   const fetchParticipants = useCallback(async (projectId: number, status: string, cId: string) => {
     setIsLoading(true);
@@ -251,11 +252,22 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const executeSearch = () => {
     let pid = selectedProjectId;
 
-    // Check if query is a manual ID input
-    const numericQuery = parseInt(query.trim(), 10);
-    if (/^\d+$/.test(query.trim()) && numericQuery > 0) {
-        pid = numericQuery;
-        setSelectedProjectId(numericQuery);
+    // Check if query is a manual ID input if no project is selected
+    if (!pid) {
+        const numericQuery = parseInt(query.trim(), 10);
+        if (/^\d+$/.test(query.trim()) && numericQuery > 0) {
+            // Check if this ID exists in our cache to show pretty name
+            const found = projects.find(p => p.id === numericQuery);
+            if (found) {
+                pid = found.id;
+                setSelectedProjectId(found.id);
+            } else {
+                // Allow searching even if not in cache (fallback)
+                pid = numericQuery;
+                // We set selected ID so the UI might try to show it
+                setSelectedProjectId(numericQuery);
+            }
+        }
     }
 
     if (pid) {
@@ -267,6 +279,13 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     setQuery(p.code);
     setSelectedProjectId(p.id);
     setShowSuggestions(false);
+  };
+
+  const handleClearSelection = () => {
+    setSelectedProjectId(null);
+    // Keep query or clear it? Better to keep it so user can edit
+    // Focus input after clearing
+    setTimeout(() => inputRef.current?.focus(), 0);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -377,8 +396,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     );
   };
 
-  const badgeName = getProjectNameBadge();
-
   return (
     <>
       <div ref={containerRef} className="w-full">
@@ -480,63 +497,69 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   )}
                 </div>
 
-                {/* Project Search (DEBUG STYLE) */}
-                <div className="relative group w-full">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none z-10">
-                    <span className="text-[10px] font-black uppercase text-indigo-700 dark:text-indigo-400 tracking-wider hidden sm:block mr-2">PROJECTID / COURSEID</span>
+                {/* Project Search (Updated) */}
+                <div className="flex gap-2 items-center">
+                  <div className="relative group w-full">
+                    {/* Display selected project in a styled card instead of input if selected */}
+                    {activeProject ? (
+                        <div 
+                           onClick={handleClearSelection}
+                           className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white cursor-text flex justify-between items-center group/display shadow-inner h-[40px] lg:h-[46px]"
+                           title="Click to change project"
+                        >
+                           <span className="text-xs font-black uppercase text-indigo-700 dark:text-indigo-400 truncate pr-2">
+                               {activeProject.code}
+                           </span>
+                           <span className="text-[10px] font-mono text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">
+                               #{activeProject.id}
+                           </span>
+                        </div>
+                    ) : (
+                        <input
+                          ref={inputRef}
+                          type="text"
+                          value={query}
+                          onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
+                          onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
+                          onKeyDown={handleKeyDown}
+                          placeholder="e.g. 63932 or 'DO14_Final'"
+                          className="w-full px-4 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs shadow-inner h-[40px] lg:h-[46px]"
+                          autoComplete="off"
+                        />
+                    )}
+                    
+                    {showSuggestions && suggestions.length > 0 && !activeProject && (
+                        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                            {suggestions.map(p => (
+                                <div 
+                                    key={`${p.id}-${p.code}`} 
+                                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
+                                    onMouseDown={(e) => {
+                                        e.preventDefault(); 
+                                        handleSelectProject(p);
+                                    }}
+                                >
+                                    <div className="flex flex-col max-w-[70%]">
+                                        <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
+                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
+                                    </div>
+                                    <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">#{p.id}</span>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                   </div>
                   
-                  <input
-                    type="text"
-                    value={query}
-                    onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
-                    onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
-                    onKeyDown={handleKeyDown}
-                    placeholder="e.g. 63932 or 'DO14_Final'"
-                    className="w-full pl-4 sm:pl-[140px] pr-20 py-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:border-indigo-500 outline-none font-mono text-xs"
-                    autoComplete="off"
-                  />
-                  
-                  {/* Badge showing project name inside input if ID matches */}
-                  {badgeName && (
-                    <div className="absolute right-10 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-indigo-50 dark:bg-indigo-900/40 rounded text-[9px] font-bold text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 pointer-events-none truncate max-w-[100px]">
-                       {badgeName}
-                    </div>
-                  )}
-
-                  {/* SEARCH BUTTON */}
-                  <div className="absolute inset-y-1 right-1 flex items-center z-20">
-                    <button
-                      onClick={executeSearch}
-                      className="h-full aspect-square flex items-center justify-center rounded-md bg-indigo-500 hover:bg-indigo-600 text-white transition-all shadow-sm active:scale-95 group/btn"
-                      title="Search"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 group-active/btn:scale-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  {showSuggestions && suggestions.length > 0 && (
-                      <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                          {suggestions.map(p => (
-                              <div 
-                                  key={`${p.id}-${p.code}`} 
-                                  className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center group border-b border-gray-100 dark:border-gray-700/50 last:border-none"
-                                  onMouseDown={(e) => {
-                                      e.preventDefault(); 
-                                      handleSelectProject(p);
-                                  }}
-                              >
-                                  <div className="flex flex-col max-w-[70%]">
-                                      <span className="text-xs font-bold text-gray-800 dark:text-gray-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors truncate">{p.code}</span>
-                                      <span className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{p.name}</span>
-                                  </div>
-                                  <span className="text-[9px] font-mono bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-800">#{p.id}</span>
-                              </div>
-                          ))}
-                      </div>
-                  )}
+                  {/* Separate Search Button */}
+                  <button
+                    onClick={executeSearch}
+                    className="flex-shrink-0 w-10 lg:w-12 h-10 lg:h-[46px] flex items-center justify-center rounded-lg bg-indigo-500 hover:bg-indigo-600 text-white transition-all shadow-sm active:scale-95 group/btn"
+                    title="Search"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 group-active/btn:scale-90 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
                 </div>
               </div>
 
