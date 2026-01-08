@@ -509,11 +509,14 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                           <button
                             key={`${p.id}-${p.code}`}
                             onClick={() => handleSelectProject(p)}
-                            className="w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 hover:bg-primary/10 rounded-lg lg:rounded-xl transition-all flex justify-between items-center mb-0.5"
+                            className="w-full text-left px-2 lg:px-4 py-1.5 lg:py-2.5 hover:bg-primary/10 rounded-lg lg:rounded-xl transition-all flex justify-between items-center mb-0.5 group"
                           >
-                            <div className="flex flex-col min-w-0">
-                              <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-gray-200 truncate">{p.code}</span>
+                            <div className="flex flex-col min-w-0 mr-2">
+                              <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-gray-200 truncate group-hover:text-primary transition-colors">{p.code}</span>
                               <span className="text-[6px] lg:text-[8px] text-gray-400 font-bold uppercase truncate">{p.name}</span>
+                            </div>
+                            <div className="flex-shrink-0 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50 border border-gray-100 dark:border-gray-600">
+                               <span className="text-[8px] font-mono font-bold text-gray-400 dark:text-gray-500 group-hover:text-primary/70">#{p.id}</span>
                             </div>
                           </button>
                         ))}
