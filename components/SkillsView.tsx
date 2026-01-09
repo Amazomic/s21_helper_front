@@ -85,7 +85,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
         <div className="px-3 lg:px-4 pb-3 lg:pb-4">
             {/* Chart Bars */}
             <div className="relative w-full h-28 lg:h-36 mt-1">
-              <div className="absolute inset-0 flex items-end w-full pb-0.5">
+              <div className="absolute inset-0 flex items-end justify-between gap-[1.5px] lg:gap-[3px] px-0.5 pb-0.5">
                 {sortedSkills.map((skill) => {
                    const rawPercent = (skill.points / maxPoints) * 100;
                    const heightPercent = Math.max(rawPercent, 5);
@@ -94,7 +94,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
                    return (
                      <div 
                        key={skill.name} 
-                       className="relative h-full flex flex-col justify-end flex-1 min-w-0 cursor-pointer group/bar pr-px lg:pr-1 last:pr-0"
+                       className="relative h-full flex flex-col justify-end flex-1 min-w-[1px] cursor-pointer group/bar"
                        onMouseEnter={() => setActiveSkill(skill)}
                        onClick={() => setActiveSkill(skill)}
                      >
