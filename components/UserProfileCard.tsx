@@ -86,36 +86,21 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
 
         {/* Progress Section */}
         <div className="space-y-1 lg:space-y-2">
-            <div className="flex items-end justify-between px-1 mb-1">
-                {/* Current (Left) */}
-                <div className="flex flex-col items-start leading-none">
-                    <span className="text-[10px] lg:text-xs font-black text-gray-700 dark:text-gray-200">
-                        {currentXP.toLocaleString()}
-                    </span>
-                    <span className="text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                        Current
-                    </span>
+            <div className="flex justify-between items-center text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase font-mono px-0.5">
+                <div className="flex items-baseline gap-1">
+                    <span className="text-gray-900 dark:text-white font-black text-[8px] lg:text-[10px]">{currentXP.toLocaleString()}</span>
+                    <span>Current</span>
                 </div>
                 
-                {/* XP (Center) - Larger */}
-                <div className="flex items-center justify-center pb-0.5">
-                    <span className="text-lg lg:text-2xl font-black text-primary/30 dark:text-green-500/40 tracking-[0.2em]">
-                        XP
-                    </span>
-                </div>
+                <span className="text-[7px] lg:text-[9px] opacity-50">XP</span>
 
-                {/* Target (Right) */}
-                <div className="flex flex-col items-end leading-none">
-                    <span className="text-[10px] lg:text-xs font-black text-gray-700 dark:text-gray-200">
-                        {totalNeededForNext.toLocaleString()}
-                    </span>
-                    <span className="text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase tracking-wider mt-0.5">
-                        Target
-                    </span>
+                <div className="flex items-baseline gap-1">
+                    <span className="text-primary dark:text-green-400 font-black text-[8px] lg:text-[10px]">{totalNeededForNext.toLocaleString()}</span>
+                    <span>Target</span>
                 </div>
             </div>
 
-            <div className="w-full h-1 lg:h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner relative z-10">
+            <div className="w-full h-1 lg:h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
                 <div 
                     className="h-full bg-primary dark:bg-green-500 rounded-full transition-all duration-1000 ease-out" 
                     style={{ width: `${progress}%` }}
