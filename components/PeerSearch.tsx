@@ -16,7 +16,6 @@ interface PeerItem {
 export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
   const [query, setQuery] = useState('');
   const [allPeers, setAllPeers] = useState<PeerItem[]>([]);
-  const [visibleLimit, setVisibleLimit] = useState(5);
   const [isLoading, setIsLoading] = useState(true);
   
   // Modal State
@@ -43,17 +42,6 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
     if (!term) return allPeers;
     return allPeers.filter(p => p.school_login.toLowerCase().includes(term));
   }, [allPeers, query]);
-
-  const visiblePeers = useMemo(() => {
-    return filteredPeers.slice(0, visibleLimit);
-  }, [filteredPeers, visibleLimit]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const bottom = e.currentTarget.scrollHeight - e.currentTarget.scrollTop <= e.currentTarget.clientHeight + 20; // +20px buffer
-    if (bottom && visibleLimit < filteredPeers.length) {
-       setVisibleLimit(prev => Math.min(prev + 10, filteredPeers.length));
-    }
-  };
 
   const handleViewParticipant = async (login: string) => {
     setIsModalOpen(true);
@@ -129,7 +117,6 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
                 value={query}
                 onChange={(e) => { 
                     setQuery(e.target.value); 
-                    setVisibleLimit(5); // Reset scroll on search
                     if(listRef.current) listRef.current.scrollTop = 0;
                 }}
                 placeholder="Search by login..."
@@ -140,7 +127,6 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
           {/* List Area */}
           <div 
              ref={listRef}
-             onScroll={handleScroll}
              className="min-h-[50px] max-h-[250px] overflow-y-auto pr-0.5 custom-scrollbar px-0.5 scroll-smooth"
           >
             {isLoading && (
@@ -150,15 +136,15 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
               </div>
             )}
 
-            {!isLoading && visiblePeers.length === 0 && (
+            {!isLoading && filteredPeers.length === 0 && (
                 <div className="text-center py-4">
                     <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wide">No peers found</span>
                 </div>
             )}
 
-            {!isLoading && visiblePeers.length > 0 && (
+            {!isLoading && filteredPeers.length > 0 && (
               <div className="space-y-1">
-                 {visiblePeers.map((peer) => (
+                 {filteredPeers.map((peer) => (
                     <button
                         key={peer.school_login}
                         onClick={() => handleViewParticipant(peer.school_login)}
@@ -176,12 +162,6 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
                         </div>
                     </button>
                  ))}
-                 
-                 {visibleLimit < filteredPeers.length && (
-                    <div className="py-2 text-center opacity-50">
-                        <div className="w-3 h-3 border-2 border-gray-300 border-t-gray-500 rounded-full animate-spin mx-auto"></div>
-                    </div>
-                 )}
               </div>
             )}
           </div>
