@@ -149,6 +149,16 @@ export const getPeerTelegramInfo = async (login: string, token: string | null): 
   }
 };
 
+export const fetchPeersList = async (token: string): Promise<{ school_login: string, visibility: string }[]> => {
+  try {
+    const data = await fetchData('/v1/telegram/peers', token);
+    return data.peers || [];
+  } catch (e) {
+    console.error("Failed to fetch peers list", e);
+    return [];
+  }
+};
+
 export const notifyPeer = async (targetLogin: string, token: string | null): Promise<void> => {
   await fetchData('/v1/telegram/notify', token, {
     method: 'POST',

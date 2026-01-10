@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { fetchData, fetchTelegramSettings } from '../services/apiService';
 import { ResultModal } from './ResultModal';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
+import { PeerSearch } from './PeerSearch';
 import { DebugView } from './DebugView';
 import { UserMenu } from './UserMenu';
 import { TelegramConfig } from '../types';
@@ -283,12 +284,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <main className="max-w-7xl mx-auto px-2 sm:px-6 pt-2 pb-6">
         {!debugMode ? (
           <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
-             {/* Main Content: Just Project Search Now */}
+             {/* Project Search */}
              <div className="w-full">
                  <ProjectParticipantsSearch 
                     token={token} 
                     campusId={userData?.campusId || userData?.campus?.id} 
                   />
+             </div>
+             
+             {/* Peer Search */}
+             <div className="w-full">
+                <PeerSearch token={token} />
              </div>
           </div>
         ) : (
