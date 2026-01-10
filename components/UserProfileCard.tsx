@@ -86,23 +86,24 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
 
         {/* Progress Section */}
         <div className="space-y-1 lg:space-y-2">
-            <div className="flex justify-between items-end px-1 mb-0.5">
-                <div className="flex flex-col items-start leading-tight">
-                    <span className="text-[9px] lg:text-[11px] font-black text-gray-700 dark:text-gray-200">{currentXP.toLocaleString()}</span>
-                    <span className="text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase tracking-wider">Current</span>
+            <div className="flex justify-between items-end px-1 mb-1 relative">
+                <div className="flex items-baseline gap-1 z-10">
+                    <span className="text-[10px] lg:text-xs font-black text-gray-700 dark:text-gray-200">{currentXP.toLocaleString()}</span>
+                    <span className="text-[8px] lg:text-[10px] font-bold text-gray-400 uppercase tracking-wider">Current</span>
                 </div>
                 
-                <div className="pb-0.5">
-                    <span className="text-xs lg:text-sm font-black text-primary dark:text-green-500 tracking-[0.25em]">XP</span>
+                {/* Centered XP Label - Large */}
+                <div className="absolute inset-x-0 bottom-0 flex justify-center pointer-events-none">
+                    <span className="text-xl lg:text-2xl font-black text-primary/20 dark:text-green-500/30 tracking-[0.3em] leading-none -mb-1">XP</span>
                 </div>
 
-                <div className="flex flex-col items-end leading-tight">
-                    <span className="text-[9px] lg:text-[11px] font-black text-gray-700 dark:text-gray-200">{totalNeededForNext.toLocaleString()}</span>
-                    <span className="text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase tracking-wider">Target</span>
+                <div className="flex items-baseline gap-1 z-10">
+                    <span className="text-[10px] lg:text-xs font-black text-gray-700 dark:text-gray-200">{totalNeededForNext.toLocaleString()}</span>
+                    <span className="text-[8px] lg:text-[10px] font-bold text-gray-400 uppercase tracking-wider">Target</span>
                 </div>
             </div>
 
-            <div className="w-full h-1 lg:h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner">
+            <div className="w-full h-1 lg:h-1.5 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden shadow-inner relative z-10">
                 <div 
                     className="h-full bg-primary dark:bg-green-500 rounded-full transition-all duration-1000 ease-out" 
                     style={{ width: `${progress}%` }}
