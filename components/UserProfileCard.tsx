@@ -92,11 +92,11 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
                     <span>Current</span>
                 </div>
                 
-                <span className="text-[10px] lg:text-xs opacity-50">XP</span>
+                <span className="text-[10px] lg:text-xs font-black text-primary dark:text-green-400">XP</span>
 
                 <div className="flex items-baseline gap-1">
                     <span>Target</span>
-                    <span className="text-primary dark:text-green-400 font-black text-[10px] lg:text-xs">{totalNeededForNext.toLocaleString()}</span>
+                    <span className="text-gray-900 dark:text-white font-black text-[10px] lg:text-xs">{totalNeededForNext.toLocaleString()}</span>
                 </div>
             </div>
 
@@ -107,7 +107,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
                 ></div>
             </div>
             
-            <p className="text-[6px] lg:text-[8px] text-center text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tighter">
+            <p className="text-[7px] lg:text-[9px] text-center text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tighter">
                 {remainingXP.toLocaleString()} to Next
             </p>
         </div>
