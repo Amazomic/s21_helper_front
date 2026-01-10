@@ -26,14 +26,15 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
 
   const listRef = useRef<HTMLDivElement>(null);
 
+  const loadPeers = async () => {
+    setIsLoading(true);
+    const data = await fetchPeersList(token);
+    // Sort alphabetically for better UX
+    setAllPeers(data.sort((a, b) => a.school_login.localeCompare(b.school_login)));
+    setIsLoading(false);
+  };
+
   useEffect(() => {
-    const loadPeers = async () => {
-      setIsLoading(true);
-      const data = await fetchPeersList(token);
-      // Sort alphabetically for better UX
-      setAllPeers(data.sort((a, b) => a.school_login.localeCompare(b.school_login)));
-      setIsLoading(false);
-    };
     loadPeers();
   }, [token]);
 
@@ -98,10 +99,33 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
               <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Connected Peers</p>
             </div>
             
-            <div className="flex items-center gap-1">
-               <span className="text-[10px] font-black text-gray-300 dark:text-gray-600 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-2 lg:gap-3">
+               <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-lg border border-gray-100 dark:border-gray-700 min-w-[20px] text-center">
                   {allPeers.length}
                </span>
+
+               {isLoading ? (
+                  <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                    <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
+                    <span className="text-[7px] lg:text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-tighter hidden sm:inline">LOADING</span>
+                  </div>
+               ) : (
+                  <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-emerald-500/10 rounded-lg lg:rounded-xl border border-emerald-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
+                    <div className="w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="text-[7px] lg:text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter hidden sm:inline">READY</span>
+                  </div>
+               )}
+
+               <button 
+                  onClick={loadPeers}
+                  disabled={isLoading}
+                  className={`p-1 lg:p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:bg-primary/10 transition-all ${isLoading ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+                  title="Refresh Peers List"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className={`h-3 w-3 lg:h-3.5 lg:w-3.5 ${isLoading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                </button>
             </div>
           </div>
 
@@ -129,7 +153,7 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
              ref={listRef}
              className="min-h-[50px] max-h-[250px] overflow-y-auto pr-0.5 custom-scrollbar px-0.5 scroll-smooth"
           >
-            {isLoading && (
+            {isLoading && allPeers.length === 0 && (
               <div className="flex flex-col items-center py-4">
                 <div className="w-4 h-4 border-2 border-primary/10 border-t-primary rounded-full animate-spin mb-1"></div>
                 <span className="text-[6px] font-black text-gray-400 uppercase tracking-widest">Loading Peers...</span>
@@ -142,8 +166,8 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
                 </div>
             )}
 
-            {!isLoading && filteredPeers.length > 0 && (
-              <div className="space-y-1">
+            {filteredPeers.length > 0 && (
+              <div className={`space-y-1 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
                  {filteredPeers.map((peer) => (
                     <button
                         key={peer.school_login}
