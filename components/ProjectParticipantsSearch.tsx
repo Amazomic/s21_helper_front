@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card } from './ui/Card';
-import { fetchData, getPeerTelegramInfo, notifyPeer } from '../services/apiService';
+import { fetchData, getPeerTelegramInfo, notifyPeer, fetchPeersList } from '../services/apiService';
 import { ParticipantModal } from './ParticipantModal';
 import { PeerTelegramInfo } from '../types';
 
@@ -38,6 +38,9 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [loadingStatuses, setLoadingStatuses] = useState<Record<string, boolean>>({});
   const [notifyingPeer, setNotifyingPeer] = useState<string | null>(null);
 
+  // Global Peers Lookup Map (to avoid N+1 requests)
+  const [peersMap, setPeersMap] = useState<Map<string, { visibility: string }> | null>(null);
+
   const [cacheVersion, setCacheVersion] = useState(0); 
   const [isCacheLoading, setIsCacheLoading] = useState(false);
   
@@ -71,7 +74,40 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     };
   }, []);
 
-  // Check cache presence
+  // Initialize Peers Map (from Cache or API)
+  useEffect(() => {
+    const loadPeersMap = async () => {
+      let mapData = null;
+      
+      // Try Cache First
+      try {
+        const cached = localStorage.getItem('s21_tg_connected_cache');
+        if (cached) {
+          const list = JSON.parse(cached);
+          mapData = new Map(list.map((p: any) => [p.school_login, p]));
+        }
+      } catch(e) { console.warn("Cache parse error", e); }
+
+      // If missing, Fetch
+      if (!mapData) {
+        try {
+          const list = await fetchPeersList(token);
+          localStorage.setItem('s21_tg_connected_cache', JSON.stringify(list));
+          localStorage.setItem('s21_tg_connected_cache_timestamp', new Date().toISOString());
+          mapData = new Map(list.map((p: any) => [p.school_login, p]));
+        } catch (e) {
+          console.error("Failed to load peers map", e);
+          mapData = new Map(); // Empty map to allow rendering without connection info
+        }
+      }
+      
+      setPeersMap(mapData);
+    };
+
+    loadPeersMap();
+  }, [token]);
+
+  // Check cache presence for Graph/Campuses
   useEffect(() => {
     const checkAndLoadCache = async () => {
       const hasGraph = !!localStorage.getItem('s21_graph_cache');
@@ -97,45 +133,68 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch Telegram statuses for visible results
+  // Optimize: Determine statuses using Map instead of calling API for everyone
   useEffect(() => {
-    if (results.length === 0) return;
+    if (results.length === 0 || !peersMap) return;
 
     const fetchMissingStatuses = async () => {
       const missingLogins = results.filter(login => !peerStatuses[login] && !loadingStatuses[login]);
-      
       if (missingLogins.length === 0) return;
 
-      // Mark as loading to prevent duplicate fetches
-      setLoadingStatuses(prev => {
-        const next = { ...prev };
-        missingLogins.forEach(l => next[l] = true);
-        return next;
-      });
+      const updates: Record<string, PeerTelegramInfo> = {};
+      const loginsToFetch: string[] = [];
 
-      // Fetch in parallel (Simulating Batch Request)
-      // Ideally, backend should support POST /v1/telegram/peers/batch { logins: [] }
-      const newStatuses: Record<string, PeerTelegramInfo> = {};
-      
-      await Promise.all(missingLogins.map(async (login) => {
-        try {
-          const info = await getPeerTelegramInfo(login, token);
-          newStatuses[login] = info;
-        } catch (e) {
-          newStatuses[login] = { found: false };
+      missingLogins.forEach(login => {
+        const peer = peersMap.get(login);
+        if (!peer) {
+           // Not in connected list -> Not linked
+           updates[login] = { found: false };
+        } else {
+           // Linked
+           if (peer.visibility === 'public') {
+             // We need username for link, must fetch unless we have it elsewhere
+             loginsToFetch.push(login);
+           } else if (peer.visibility === 'notify_only') {
+             updates[login] = { found: true, can_notify: true };
+           } else {
+             // Private or fallback
+             updates[login] = { found: true }; 
+           }
         }
-      }));
-
-      setPeerStatuses(prev => ({ ...prev, ...newStatuses }));
-      setLoadingStatuses(prev => {
-        const next = { ...prev };
-        missingLogins.forEach(l => delete next[l]);
-        return next;
       });
+
+      // Batch update known statuses
+      if (Object.keys(updates).length > 0) {
+        setPeerStatuses(prev => ({ ...prev, ...updates }));
+      }
+
+      // Fetch only public profiles to get username
+      if (loginsToFetch.length > 0) {
+        setLoadingStatuses(prev => {
+           const next = { ...prev };
+           loginsToFetch.forEach(l => next[l] = true);
+           return next;
+        });
+
+        await Promise.all(loginsToFetch.map(async (login) => {
+          try {
+            const info = await getPeerTelegramInfo(login, token);
+            setPeerStatuses(prev => ({ ...prev, [login]: info }));
+          } catch (e) {
+            setPeerStatuses(prev => ({ ...prev, [login]: { found: false } }));
+          } finally {
+            setLoadingStatuses(prev => {
+              const next = { ...prev };
+              delete next[login];
+              return next;
+            });
+          }
+        }));
+      }
     };
 
     fetchMissingStatuses();
-  }, [results, token]); // Intentionally omitting dependencies to prevent loops, controlled by internal checks
+  }, [results, peersMap, token]); // Intentionally omitting full dependencies for controlled execution
 
   const handleNotifyPeer = async (e: React.MouseEvent, login: string) => {
     e.stopPropagation();
@@ -242,6 +301,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     setIsLoading(true);
     setError(null);
     setResults([]); // Clear previous results immediately
+    setPeerStatuses({}); // Clear statuses for new search
+    
     try {
       let url = `/v1/projects/${projectId}/participants?limit=100&offset=0`;
       if (status) url += `&status=${status}`;
@@ -332,7 +393,9 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const renderTelegramAction = (login: string) => {
     const info = peerStatuses[login];
     
-    if (!info) return null; // Still loading or not fetched
+    // If info is missing but we have peersMap loaded, it means they are NOT in the list (or we are fetching for public)
+    // If peersMap is not loaded yet, we show nothing.
+    if (!info) return null; 
 
     if (!info.found) return null; // No Telegram linked
 
