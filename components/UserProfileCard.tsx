@@ -108,7 +108,7 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
             </div>
             
             <p className="text-[7px] lg:text-[9px] text-center text-gray-400 dark:text-gray-500 font-bold uppercase tracking-tighter">
-                {remainingXP.toLocaleString()} to Next
+                <span className="text-amber-500">{remainingXP.toLocaleString()}</span> to Next
             </p>
         </div>
       </div>
