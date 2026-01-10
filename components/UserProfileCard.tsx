@@ -88,15 +88,15 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
         <div className="space-y-1 lg:space-y-2">
             <div className="flex justify-between items-center text-[7px] lg:text-[9px] font-bold text-gray-400 uppercase font-mono px-0.5">
                 <div className="flex items-baseline gap-1">
-                    <span className="text-gray-900 dark:text-white font-black text-[8px] lg:text-[10px]">{currentXP.toLocaleString()}</span>
+                    <span className="text-gray-900 dark:text-white font-black text-[10px] lg:text-xs">{currentXP.toLocaleString()}</span>
                     <span>Current</span>
                 </div>
                 
-                <span className="text-[7px] lg:text-[9px] opacity-50">XP</span>
+                <span className="text-[10px] lg:text-xs opacity-50">XP</span>
 
                 <div className="flex items-baseline gap-1">
-                    <span className="text-primary dark:text-green-400 font-black text-[8px] lg:text-[10px]">{totalNeededForNext.toLocaleString()}</span>
                     <span>Target</span>
+                    <span className="text-primary dark:text-green-400 font-black text-[10px] lg:text-xs">{totalNeededForNext.toLocaleString()}</span>
                 </div>
             </div>
 
