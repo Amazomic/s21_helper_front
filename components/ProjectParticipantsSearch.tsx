@@ -74,7 +74,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     };
   }, []);
 
-  // Initialize Peers Map (from Cache or API)
+  // Initialize Peers Map (from Cache or API) - Initial Load
   useEffect(() => {
     const loadPeersMap = async () => {
       let mapData = null;
@@ -308,7 +308,20 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       if (status) url += `&status=${status}`;
       if (cId) url += `&campusId=${cId}`;
 
-      const data = await fetchData(url, token);
+      // Execute in parallel: Get participants AND Refresh peer map
+      // This ensures we always have the latest visibility settings for peers
+      const [data, freshPeers] = await Promise.all([
+        fetchData(url, token),
+        fetchPeersList(token)
+      ]);
+      
+      // Update local state and cache with fresh peer data
+      if (freshPeers) {
+         setPeersMap(new Map(freshPeers.map((p: any) => [p.school_login, p])));
+         localStorage.setItem('s21_tg_connected_cache', JSON.stringify(freshPeers));
+         localStorage.setItem('s21_tg_connected_cache_timestamp', new Date().toISOString());
+      }
+
       const list = data?.participants || [];
       setResults(Array.isArray(list) ? list : []);
     } catch (err: any) {
