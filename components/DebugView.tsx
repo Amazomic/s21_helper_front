@@ -271,6 +271,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
             <CacheStatusRow label="Skills Data" cacheKey="s21_skills_cache" />
             <CacheStatusRow label="Graph Data" cacheKey="s21_graph_cache" />
             <CacheStatusRow label="Campuses" cacheKey="s21_campuses_cache" />
+            <CacheStatusRow label="TG Peers" cacheKey="s21_tg_connected_cache" />
          </div>
       </DebugSection>
 

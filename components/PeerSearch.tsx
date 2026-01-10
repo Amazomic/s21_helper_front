@@ -13,10 +13,28 @@ interface PeerItem {
   visibility: string;
 }
 
+const CACHE_KEY = 's21_tg_connected_cache';
+const CACHE_TIMESTAMP_KEY = 's21_tg_connected_cache_timestamp';
+
 export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
   const [query, setQuery] = useState('');
-  const [allPeers, setAllPeers] = useState<PeerItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  // Initialize from cache if available to show data immediately
+  const [allPeers, setAllPeers] = useState<PeerItem[]>(() => {
+    try {
+      const cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        return JSON.parse(cached).sort((a: PeerItem, b: PeerItem) => a.school_login.localeCompare(b.school_login));
+      }
+    } catch (e) {
+      console.warn("Failed to parse peer cache", e);
+    }
+    return [];
+  });
+
+  // If we have cached data, we aren't "loading" in the blocking sense, 
+  // but we might be "updating" in the background.
+  const [isLoading, setIsLoading] = useState(allPeers.length === 0);
   
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,11 +45,22 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
   const listRef = useRef<HTMLDivElement>(null);
 
   const loadPeers = async () => {
-    setIsLoading(true);
-    const data = await fetchPeersList(token);
-    // Sort alphabetically for better UX
-    setAllPeers(data.sort((a, b) => a.school_login.localeCompare(b.school_login)));
-    setIsLoading(false);
+    if (allPeers.length === 0) setIsLoading(true);
+    
+    try {
+      const data = await fetchPeersList(token);
+      
+      // Save to Cache
+      localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(CACHE_TIMESTAMP_KEY, new Date().toISOString());
+
+      // Sort alphabetically for better UX
+      setAllPeers(data.sort((a, b) => a.school_login.localeCompare(b.school_login)));
+    } catch (e) {
+      console.error("Failed to update peers list", e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -167,7 +196,7 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
             )}
 
             {filteredPeers.length > 0 && (
-              <div className={`space-y-1 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+              <div className={`space-y-1 ${isLoading && allPeers.length === 0 ? 'opacity-50 pointer-events-none' : ''}`}>
                  {filteredPeers.map((peer) => (
                     <button
                         key={peer.school_login}
