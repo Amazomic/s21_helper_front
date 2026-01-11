@@ -291,7 +291,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         {!debugMode ? (
           <div className="max-w-3xl mx-auto animate-in fade-in duration-500">
              {/* Project Search */}
-             <div className="w-full">
+             <div className="w-full relative z-30">
                  <ProjectParticipantsSearch 
                     token={token} 
                     campusId={userData?.campusId || userData?.campus?.id} 
@@ -299,7 +299,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
              </div>
              
              {/* Peer Search */}
-             <div className="w-full">
+             <div className="w-full relative z-20">
                 <PeerSearch token={token} />
              </div>
           </div>
