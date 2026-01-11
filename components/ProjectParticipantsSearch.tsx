@@ -8,6 +8,8 @@ interface ProjectParticipantsSearchProps {
   campusId?: string;
   headless?: boolean;
   headerContent?: React.ReactNode;
+  externalSelection?: { id: number; code: string } | null;
+  onExternalSelectionHandled?: () => void;
 }
 
 interface NormalizedProject {
@@ -22,7 +24,14 @@ interface Campus {
   fullName: string;
 }
 
-export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, headless = false, headerContent }) => {
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ 
+  token, 
+  campusId: initialCampusId, 
+  headless = false, 
+  headerContent,
+  externalSelection,
+  onExternalSelectionHandled
+}) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
@@ -170,6 +179,29 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     const userProjects = getUserProjectsFromCache();
     return userProjects.find(p => p.id === selectedProjectId);
   }, [projects, selectedProjectId]);
+
+  // Handle external selection (e.g. passed from UnifiedSearch when switching tabs)
+  useEffect(() => {
+    if (externalSelection) {
+      const { id, code } = externalSelection;
+      setSelectedProjectId(id);
+      
+      const knownProject = projects.find(p => p.id === id);
+      setQuery(knownProject ? knownProject.code : code);
+
+      setShowSuggestions(false);
+      setShowCampusDropdown(false);
+      
+      // Scroll to this component
+      if (containerRef.current) {
+          containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      if (onExternalSelectionHandled) {
+        onExternalSelectionHandled();
+      }
+    }
+  }, [externalSelection, projects, onExternalSelectionHandled]);
 
   // Listen for project selection from other components (e.g. UserMenu)
   // We need to do this here to access the 'projects' list for name lookup
@@ -509,7 +541,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   {/* Selected Project ID Badge (Right) - Shows only if we have a match by Code */}
                   {selectedProject && query === selectedProject.code && (
                      <div className="absolute inset-y-0 right-1.5 flex items-center z-20 pointer-events-none">
-                        <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[8px] font-black font-mono border border-gray-200 dark:border-gray-600 shadow-sm">
+                        <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-black font-mono border border-gray-200 dark:border-gray-600 shadow-sm">
                            #{selectedProject.id}
                         </span>
                      </div>

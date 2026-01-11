@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card } from './ui/Card';
 import { ProjectParticipantsSearch } from './ProjectParticipantsSearch';
 import { PeerSearch } from './PeerSearch';
@@ -11,6 +11,23 @@ interface UnifiedSearchProps {
 
 export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ token, campusId }) => {
   const [mode, setMode] = useState<'projects' | 'peers'>('projects');
+  const [pendingSelection, setPendingSelection] = useState<{ id: number; code: string } | null>(null);
+
+  useEffect(() => {
+    const handleProjectSelect = (e: CustomEvent) => {
+      // If we are currently viewing peers, switch to projects and pass the selection
+      if (mode === 'peers') {
+        setMode('projects');
+        setPendingSelection(e.detail);
+      }
+      // If already in 'projects' mode, ProjectParticipantsSearch handles the event directly via its own listener
+    };
+
+    window.addEventListener('s21:select_project', handleProjectSelect as EventListener);
+    return () => {
+      window.removeEventListener('s21:select_project', handleProjectSelect as EventListener);
+    };
+  }, [mode]);
 
   const headerContent = (
     <div className="flex items-center gap-3">
@@ -38,7 +55,14 @@ export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ token, campusId })
   return (
     <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full">
        {mode === 'projects' ? (
-          <ProjectParticipantsSearch token={token} campusId={campusId} headless headerContent={headerContent} />
+          <ProjectParticipantsSearch 
+            token={token} 
+            campusId={campusId} 
+            headless 
+            headerContent={headerContent}
+            externalSelection={pendingSelection}
+            onExternalSelectionHandled={() => setPendingSelection(null)}
+          />
        ) : (
           <PeerSearch token={token} headless headerContent={headerContent} />
        )}
