@@ -74,6 +74,14 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
     }
   };
 
+  const handleProjectClick = (project: Project) => {
+    // Dispatch event to switch search context to this project
+    window.dispatchEvent(new CustomEvent('s21:select_project', { 
+        detail: { id: project.id, code: project.title, name: project.title } 
+    }));
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   const getStatusColor = (status: string) => {
@@ -237,14 +245,18 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
                       </div>
                     ) : (
                       data.projects.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm">
-                            <span className="text-[10px] font-bold text-gray-700 dark:text-gray-200 truncate pr-2">
+                        <button 
+                          key={p.id} 
+                          onClick={() => handleProjectClick(p)}
+                          className="w-full flex items-center justify-between p-2 rounded-lg bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-sm hover:border-primary/50 dark:hover:border-primary/50 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all cursor-pointer group"
+                        >
+                            <span className="text-[10px] font-bold text-gray-700 dark:text-gray-200 truncate pr-2 group-hover:text-primary transition-colors">
                                 {p.title}
                             </span>
                             <span className={`text-[7px] font-black uppercase tracking-tight px-1.5 py-0.5 rounded border ${getStatusColor(p.status)} whitespace-nowrap`}>
                                 {formatStatus(p.status)}
                             </span>
-                        </div>
+                        </button>
                       ))
                     )}
                   </div>
