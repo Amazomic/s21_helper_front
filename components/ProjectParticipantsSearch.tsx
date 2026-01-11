@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card } from './ui/Card';
 import { fetchData, fetchPeersList } from '../services/apiService';
@@ -542,8 +541,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                               <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-gray-200 truncate group-hover:text-primary transition-colors">{p.code}</span>
                               <span className="text-[6px] lg:text-[8px] text-gray-400 font-bold uppercase truncate">{p.name}</span>
                             </div>
-                            <div className="flex-shrink-0 px-1.5 py-0.5 rounded-md bg-gray-50 dark:bg-gray-700/50">
-                               <span className="text-[8px] font-mono font-bold text-gray-400 dark:text-gray-500 group-hover:text-primary/70">#{p.id}</span>
+                            <div className="flex-shrink-0">
+                               <span className="text-[8px] font-mono font-bold text-gray-400 dark:text-gray-600 group-hover:text-primary/70">#{p.id}</span>
                             </div>
                           </button>
                         ))}
