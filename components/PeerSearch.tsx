@@ -117,6 +117,26 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
     }
   };
 
+  const renderStatusDot = (visibility: string) => {
+    let colorClass = 'bg-gray-400';
+    let title = 'Private';
+
+    if (visibility === 'public') {
+      colorClass = 'bg-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.5)]';
+      title = 'Public';
+    } else if (visibility === 'notify_only') {
+      colorClass = 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.5)]';
+      title = 'Notify Only';
+    }
+
+    return (
+      <div 
+        className={`w-2 h-2 rounded-full ${colorClass}`} 
+        title={title}
+      />
+    );
+  };
+
   return (
     <>
       <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full mt-4">
@@ -203,15 +223,20 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
                         onClick={() => handleViewParticipant(peer.school_login)}
                         className="w-full flex items-center justify-between p-2 lg:p-3 bg-gray-50/50 dark:bg-gray-800/30 rounded-xl lg:rounded-2xl border border-white/40 dark:border-gray-800/40 hover:border-primary/30 hover:bg-white dark:hover:bg-gray-800/60 hover:shadow-md transition-all group shadow-sm cursor-pointer text-left"
                     >
-                        <div className="flex items-center gap-2">
-                             <div className={`w-2 h-2 rounded-full ${peer.visibility === 'public' ? 'bg-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.5)]' : 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.5)]'}`} title={peer.visibility === 'public' ? 'Public' : 'Notify Only'}></div>
-                             <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight truncate">{peer.school_login}</span>
-                        </div>
+                        {/* Name Left */}
+                        <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight truncate pl-1">
+                          {peer.school_login}
+                        </span>
                         
-                        <div className="text-gray-300 group-hover:text-primary transition-colors">
-                           <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                           </svg>
+                        {/* Dot & Arrow Right */}
+                        <div className="flex items-center gap-2">
+                           {renderStatusDot(peer.visibility)}
+                           
+                           <div className="text-gray-300 group-hover:text-primary transition-colors">
+                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                             </svg>
+                           </div>
                         </div>
                     </button>
                  ))}
