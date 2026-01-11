@@ -176,12 +176,12 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   // We need to do this here to access the 'projects' list for name lookup
   useEffect(() => {
     const handleSelection = (e: CustomEvent) => {
-      const { id, name, code } = e.detail;
+      const { id, code } = e.detail;
       setSelectedProjectId(id);
       
-      // Try to find exact name from cache to be pretty, otherwise use provided name/code
+      // Try to find exact code from cache to be pretty, otherwise use provided code
       const knownProject = projects.find(p => p.id === id);
-      setQuery(knownProject ? knownProject.name : (name || code));
+      setQuery(knownProject ? knownProject.code : code);
 
       // Ensure dropdowns are closed and user sees result
       setShowSuggestions(false);
@@ -233,8 +233,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     const term = query.toLowerCase().trim();
     if (term.length < 2) return [];
     
-    // If exact name match, don't show suggestions
-    if (selectedProject && query === selectedProject.name) return [];
+    // If exact code match, don't show suggestions
+    if (selectedProject && query === selectedProject.code) return [];
 
     return projects
       .filter((p) => 
@@ -285,8 +285,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   }, [selectedProjectId, selectedStatus, selectedCampusId, fetchParticipants]);
 
   const handleSelectProject = (p: NormalizedProject) => {
-    // Show Full Name in the input
-    setQuery(p.name);
+    // Show Code in the input (Top line of suggestion)
+    setQuery(p.code);
     setSelectedProjectId(p.id);
     setShowSuggestions(false);
   };
@@ -507,8 +507,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     className="w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
                   />
 
-                  {/* Selected Project ID Badge (Right) - Shows only if we have a match by Name */}
-                  {selectedProject && query === selectedProject.name && (
+                  {/* Selected Project ID Badge (Right) - Shows only if we have a match by Code */}
+                  {selectedProject && query === selectedProject.code && (
                      <div className="absolute inset-y-0 right-1.5 flex items-center z-20 pointer-events-none">
                         <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[8px] font-black font-mono border border-gray-200 dark:border-gray-600 shadow-sm">
                            #{selectedProject.id}
