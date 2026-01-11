@@ -7,6 +7,7 @@ import { ParticipantModal } from './ParticipantModal';
 interface ProjectParticipantsSearchProps {
   token: string;
   campusId?: string;
+  headless?: boolean;
 }
 
 interface NormalizedProject {
@@ -21,7 +22,7 @@ interface Campus {
   fullName: string;
 }
 
-export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId }) => {
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, headless = false }) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
@@ -340,20 +341,27 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     );
   };
 
+  const ContentWrapper = headless ? 'div' : Card;
+  const wrapperProps = headless 
+    ? { className: "h-full w-full" } 
+    : { className: "shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full" };
+
   return (
     <>
       <div ref={containerRef} className="w-full">
-        <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full">
+        <ContentWrapper {...wrapperProps}>
           <div className="flex flex-col gap-2 lg:gap-6">
             {/* Header */}
-            <div className="flex items-center justify-between gap-2 px-1">
-              <div className="flex flex-col min-w-0">
-                <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
-                <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
-              </div>
+            <div className={`flex items-center justify-between gap-2 px-1 ${headless ? 'mb-2' : ''}`}>
+              {!headless && (
+                <div className="flex flex-col min-w-0">
+                  <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
+                  <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
+                </div>
+              )}
               
-              {/* Cache Controls */}
-              <div className="flex-shrink-0 flex items-center gap-2 lg:gap-3">
+              {/* Cache Controls - Always visible but alignment depends on headless */}
+              <div className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 ${headless ? 'w-full justify-end' : ''}`}>
                 <div className="flex items-center gap-2 pl-2 lg:pl-3">
                     {isCacheLoading ? (
                       <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
@@ -552,7 +560,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
               )}
             </div>
           </div>
-        </Card>
+        </ContentWrapper>
       </div>
 
       <ParticipantModal 
