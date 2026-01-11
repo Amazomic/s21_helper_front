@@ -237,6 +237,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   const isAnyLoading = loadingEndpoint !== null || (userLoading && !userData) || (skillsLoading && !skillsData) || (projectsLoading && !projectsData);
 
+  const getTelegramStatusClass = (visibility: string | undefined) => {
+    if (visibility === 'public') return 'bg-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.5)]';
+    if (visibility === 'notify_only') return 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.5)]';
+    return 'bg-gray-400';
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 pb-10 transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100">
       <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40 border-b dark:border-gray-800 transition-colors">
@@ -254,7 +260,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {username.charAt(0).toUpperCase()}
               {telegramConfig?.isLinked && (
                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
-                    <div className="w-2.5 h-2.5 bg-sky-500 rounded-full border-2 border-white dark:border-gray-900"></div>
+                    <div className={`w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${getTelegramStatusClass(telegramConfig.visibility)}`}></div>
                  </div>
               )}
             </button>
