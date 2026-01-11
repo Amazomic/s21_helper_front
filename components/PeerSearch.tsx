@@ -7,6 +7,7 @@ import { ParticipantModal } from './ParticipantModal';
 interface PeerSearchProps {
   token: string;
   headless?: boolean;
+  headerContent?: React.ReactNode;
 }
 
 interface PeerItem {
@@ -17,7 +18,7 @@ interface PeerItem {
 const CACHE_KEY = 's21_tg_connected_cache';
 const CACHE_TIMESTAMP_KEY = 's21_tg_connected_cache_timestamp';
 
-export const PeerSearch: React.FC<PeerSearchProps> = ({ token, headless = false }) => {
+export const PeerSearch: React.FC<PeerSearchProps> = ({ token, headless = false, headerContent }) => {
   const [query, setQuery] = useState('');
   
   // Initialize from cache if available to show data immediately
@@ -149,14 +150,20 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token, headless = false 
         <div className="flex flex-col gap-2 lg:gap-6">
           {/* Header */}
           <div className={`flex items-center justify-between gap-2 px-1 ${headless ? 'mb-2' : ''}`}>
-            {!headless && (
-              <div className="flex flex-col min-w-0">
-                <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Peer Search</h3>
-                <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Connected Peers</p>
-              </div>
+            {headerContent ? (
+               <div className="flex-1 min-w-0">
+                  {headerContent}
+               </div>
+            ) : (
+                !headless && (
+                <div className="flex flex-col min-w-0">
+                    <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Peer Search</h3>
+                    <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Connected Peers</p>
+                </div>
+                )
             )}
             
-            <div className={`flex items-center gap-2 lg:gap-3 ${headless ? 'w-full justify-end' : ''}`}>
+            <div className={`flex items-center gap-2 lg:gap-3`}>
                {isLoading ? (
                   <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
                     <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>

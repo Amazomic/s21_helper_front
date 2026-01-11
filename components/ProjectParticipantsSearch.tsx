@@ -8,6 +8,7 @@ interface ProjectParticipantsSearchProps {
   token: string;
   campusId?: string;
   headless?: boolean;
+  headerContent?: React.ReactNode;
 }
 
 interface NormalizedProject {
@@ -22,7 +23,7 @@ interface Campus {
   fullName: string;
 }
 
-export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, headless = false }) => {
+export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps> = ({ token, campusId: initialCampusId, headless = false, headerContent }) => {
   const [query, setQuery] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<number | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string>('IN_REVIEWS');
@@ -351,17 +352,23 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
       <div ref={containerRef} className="w-full">
         <ContentWrapper {...wrapperProps}>
           <div className="flex flex-col gap-2 lg:gap-6">
-            {/* Header */}
+            {/* Header Area */}
             <div className={`flex items-center justify-between gap-2 px-1 ${headless ? 'mb-2' : ''}`}>
-              {!headless && (
-                <div className="flex flex-col min-w-0">
-                  <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
-                  <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
+              {headerContent ? (
+                <div className="flex-1 min-w-0">
+                   {headerContent}
                 </div>
+              ) : (
+                !headless && (
+                  <div className="flex flex-col min-w-0">
+                    <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Project Search</h3>
+                    <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Find participants</p>
+                  </div>
+                )
               )}
               
-              {/* Cache Controls - Always visible but alignment depends on headless */}
-              <div className={`flex-shrink-0 flex items-center gap-2 lg:gap-3 ${headless ? 'w-full justify-end' : ''}`}>
+              {/* Cache Controls - Status + Refresh Button */}
+              <div className="flex-shrink-0 flex items-center gap-2 lg:gap-3">
                 <div className="flex items-center gap-2 pl-2 lg:pl-3">
                     {isCacheLoading ? (
                       <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">

@@ -12,34 +12,35 @@ interface UnifiedSearchProps {
 export const UnifiedSearch: React.FC<UnifiedSearchProps> = ({ token, campusId }) => {
   const [mode, setMode] = useState<'projects' | 'peers'>('projects');
 
+  const headerContent = (
+    <div className="flex items-center gap-3">
+        <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">
+        Search
+        </h3>
+
+        <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+            <button 
+            onClick={() => setMode('projects')} 
+            className={`px-3 lg:px-4 py-1.5 rounded-lg text-[10px] lg:text-xs font-black uppercase tracking-wide transition-all ${mode === 'projects' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            >
+            Projects
+            </button>
+            <button 
+            onClick={() => setMode('peers')} 
+            className={`px-3 lg:px-4 py-1.5 rounded-lg text-[10px] lg:text-xs font-black uppercase tracking-wide transition-all ${mode === 'peers' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+            >
+            Peers
+            </button>
+        </div>
+    </div>
+  );
+
   return (
     <Card className="shadow-2xl border-none rounded-3xl bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl overflow-visible border border-white/20 dark:border-gray-800 ring-1 ring-black/5 transition-all h-full">
-       {/* Header with Toggle */}
-       <div className="flex items-center gap-3 px-1 mb-2 lg:mb-4">
-          <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">
-            Search
-          </h3>
-
-          <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
-             <button 
-                onClick={() => setMode('projects')} 
-                className={`px-3 lg:px-4 py-1.5 rounded-lg text-[10px] lg:text-xs font-black uppercase tracking-wide transition-all ${mode === 'projects' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-             >
-                Projects
-             </button>
-             <button 
-                onClick={() => setMode('peers')} 
-                className={`px-3 lg:px-4 py-1.5 rounded-lg text-[10px] lg:text-xs font-black uppercase tracking-wide transition-all ${mode === 'peers' ? 'bg-white dark:bg-gray-700 text-primary shadow-sm' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
-             >
-                Peers
-             </button>
-          </div>
-       </div>
-
        {mode === 'projects' ? (
-          <ProjectParticipantsSearch token={token} campusId={campusId} headless />
+          <ProjectParticipantsSearch token={token} campusId={campusId} headless headerContent={headerContent} />
        ) : (
-          <PeerSearch token={token} headless />
+          <PeerSearch token={token} headless headerContent={headerContent} />
        )}
     </Card>
   );
