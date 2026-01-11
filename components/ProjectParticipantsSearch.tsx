@@ -156,6 +156,20 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     } catch (e) { return []; }
   };
 
+  const getUserProjectsFromCache = (): NormalizedProject[] => {
+    try {
+      const cached = localStorage.getItem('s21_projects_cache');
+      if (!cached) return [];
+      const parsed = JSON.parse(cached);
+      const list = parsed.projects || [];
+      return list.map((p: any) => ({
+        id: p.id,
+        name: p.title, 
+        code: p.title
+      }));
+    } catch (e) { return []; }
+  };
+
   const getCampusesFromCache = (): Campus[] => {
     try {
       const cached = localStorage.getItem('s21_campuses_cache');
@@ -171,7 +185,12 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
 
   // Derived state for selected project
   const selectedProject = useMemo(() => {
-    return projects.find(p => p.id === selectedProjectId);
+    const graphP = projects.find(p => p.id === selectedProjectId);
+    if (graphP) return graphP;
+
+    // Fallback: Try to find in user projects (e.g. if graph cache is empty or incomplete)
+    const userProjects = getUserProjectsFromCache();
+    return userProjects.find(p => p.id === selectedProjectId);
   }, [projects, selectedProjectId]);
 
   const cacheStatus = useMemo(() => {
@@ -477,7 +496,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
                     placeholder="Project code or ID..."
-                    className={`w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner ${selectedProject && !isInputFocused && query === selectedProject.code ? 'text-transparent selection:bg-transparent placeholder:text-transparent' : ''}`}
+                    className={`w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner ${selectedProject && !isInputFocused && query === selectedProject.code ? '!text-transparent !selection:bg-transparent !placeholder:text-transparent' : ''}`}
                   />
 
                   {/* Selected Project Name Overlay (Left) */}
