@@ -1,9 +1,8 @@
 
 import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { Card } from './ui/Card';
-import { fetchData, getPeerTelegramInfo, notifyPeer, fetchPeersList } from '../services/apiService';
+import { fetchData, fetchPeersList } from '../services/apiService';
 import { ParticipantModal } from './ParticipantModal';
-import { PeerTelegramInfo } from '../types';
 
 interface ProjectParticipantsSearchProps {
   token: string;
@@ -33,11 +32,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCampusDropdown, setShowCampusDropdown] = useState(false);
   
-  // Telegram Peer Statuses State
-  const [peerStatuses, setPeerStatuses] = useState<Record<string, PeerTelegramInfo>>({});
-  const [loadingStatuses, setLoadingStatuses] = useState<Record<string, boolean>>({});
-  const [notifyingPeer, setNotifyingPeer] = useState<string | null>(null);
-
   // Global Peers Lookup Map (to avoid N+1 requests)
   const [peersMap, setPeersMap] = useState<Map<string, { visibility: string }> | null>(null);
 
@@ -133,86 +127,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Optimize: Determine statuses using Map instead of calling API for everyone
-  useEffect(() => {
-    if (results.length === 0 || !peersMap) return;
-
-    const fetchMissingStatuses = async () => {
-      const missingLogins = results.filter(login => !peerStatuses[login] && !loadingStatuses[login]);
-      if (missingLogins.length === 0) return;
-
-      const updates: Record<string, PeerTelegramInfo> = {};
-      const loginsToFetch: string[] = [];
-
-      missingLogins.forEach(login => {
-        const peer = peersMap.get(login);
-        if (!peer) {
-           // Not in connected list -> Not linked
-           updates[login] = { found: false };
-        } else {
-           // Linked
-           if (peer.visibility === 'public') {
-             // We need username for link, must fetch unless we have it elsewhere
-             loginsToFetch.push(login);
-           } else if (peer.visibility === 'notify_only') {
-             updates[login] = { found: true, can_notify: true };
-           } else {
-             // Private or fallback
-             updates[login] = { found: true }; 
-           }
-        }
-      });
-
-      // Batch update known statuses
-      if (Object.keys(updates).length > 0) {
-        setPeerStatuses(prev => ({ ...prev, ...updates }));
-      }
-
-      // Fetch only public profiles to get username
-      if (loginsToFetch.length > 0) {
-        setLoadingStatuses(prev => {
-           const next = { ...prev };
-           loginsToFetch.forEach(l => next[l] = true);
-           return next;
-        });
-
-        await Promise.all(loginsToFetch.map(async (login) => {
-          try {
-            const info = await getPeerTelegramInfo(login, token);
-            setPeerStatuses(prev => ({ ...prev, [login]: info }));
-          } catch (e) {
-            setPeerStatuses(prev => ({ ...prev, [login]: { found: false } }));
-          } finally {
-            setLoadingStatuses(prev => {
-              const next = { ...prev };
-              delete next[login];
-              return next;
-            });
-          }
-        }));
-      }
-    };
-
-    fetchMissingStatuses();
-  }, [results, peersMap, token]); // Intentionally omitting full dependencies for controlled execution
-
-  const handleNotifyPeer = async (e: React.MouseEvent, login: string) => {
-    e.stopPropagation();
-    if (notifyingPeer) return;
-    
-    if (!confirm(`Send a notification bot message to ${login}?`)) return;
-
-    setNotifyingPeer(login);
-    try {
-      await notifyPeer(login, token);
-      alert(`Notification sent to ${login}`);
-    } catch (err: any) {
-      alert(`Failed to notify: ${err.message}`);
-    } finally {
-      setNotifyingPeer(null);
-    }
-  };
-
   const getProjectsFromCache = (): NormalizedProject[] => {
     try {
       const cached = localStorage.getItem('s21_graph_cache');
@@ -301,7 +215,6 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     setIsLoading(true);
     setError(null);
     setResults([]); // Clear previous results immediately
-    setPeerStatuses({}); // Clear statuses for new search
     
     try {
       let url = `/v1/projects/${projectId}/participants?limit=100&offset=0`;
@@ -403,66 +316,27 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
     }
   };
 
-  const renderTelegramAction = (login: string) => {
-    const info = peerStatuses[login];
-    
-    // If info is missing but we have peersMap loaded, it means they are NOT in the list (or we are fetching for public)
-    // If peersMap is not loaded yet, we show nothing.
-    if (!info) return null; 
+  const renderPeerStatus = (login: string) => {
+    if (!peersMap) return null;
+    const peer = peersMap.get(login);
+    if (!peer) return null;
 
-    if (!info.found) return null; // No Telegram linked
+    let colorClass = 'bg-gray-400';
+    let title = 'Private';
 
-    // Case 1: Public -> Link to Telegram
-    if (info.can_message && info.telegram_username) {
-      return (
-        <a 
-          href={`https://t.me/${info.telegram_username}`} 
-          target="_blank" 
-          rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-600 dark:text-sky-400 border border-sky-500/20 transition-all group/tg"
-          title={`Open Telegram: @${info.telegram_username}`}
-        >
-          <span className="text-[9px] font-black uppercase tracking-tight hidden sm:inline">Open</span>
-          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .24z"/>
-          </svg>
-        </a>
-      );
+    if (peer.visibility === 'public') {
+      colorClass = 'bg-sky-500 shadow-[0_0_5px_rgba(14,165,233,0.5)]';
+      title = 'Public';
+    } else if (peer.visibility === 'notify_only') {
+      colorClass = 'bg-amber-500 shadow-[0_0_5px_rgba(245,158,11,0.5)]';
+      title = 'Notify Only';
     }
 
-    // Case 2: Notify Only -> Notify Button
-    if (info.can_notify) {
-      const isSending = notifyingPeer === login;
-      return (
-        <button
-          onClick={(e) => handleNotifyPeer(e, login)}
-          disabled={isSending}
-          className={`flex items-center gap-1.5 px-2 py-1 rounded-lg border transition-all ${isSending ? 'bg-gray-100 border-gray-200 cursor-wait' : 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border-amber-500/20'}`}
-          title="Send notification via Bot"
-        >
-          {isSending ? (
-            <div className="w-3.5 h-3.5 border-2 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <>
-              <span className="text-[9px] font-black uppercase tracking-tight hidden sm:inline">Notify</span>
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
-              </svg>
-            </>
-          )}
-        </button>
-      );
-    }
-
-    // Case 3: Private but Linked -> Badge only
     return (
-      <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-400 border border-gray-200 dark:border-gray-700 opacity-60">
-         <span className="text-[9px] font-black uppercase tracking-tight">Linked</span>
-         <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-         </svg>
-      </div>
+      <div 
+        className={`w-2 h-2 rounded-full ${colorClass}`} 
+        title={title}
+      />
     );
   };
 
@@ -662,8 +536,8 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                         <span className="text-[10px] lg:text-sm font-black text-gray-800 dark:text-gray-100 tracking-tight pl-1 truncate max-w-[40%]">{login}</span>
                         
                         <div className="flex items-center gap-2">
-                           {/* Telegram Status Actions */}
-                           {renderTelegramAction(login)}
+                           {/* Telegram Status Dot */}
+                           {renderPeerStatus(login)}
 
                            <div className="text-gray-300 group-hover:text-primary transition-colors">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 lg:h-4 lg:w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
