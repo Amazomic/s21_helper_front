@@ -143,16 +143,17 @@ export const PeerSearch: React.FC<PeerSearchProps> = ({ token }) => {
         <div className="flex flex-col gap-2 lg:gap-6">
           {/* Header */}
           <div className="flex items-center justify-between gap-2 px-1">
-            <div className="flex flex-col min-w-0">
-              <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Peer Search</h3>
-              <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Connected Peers</p>
-            </div>
-            
-            <div className="flex items-center gap-2 lg:gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+               <div className="flex flex-col min-w-0">
+                 <h3 className="text-xs lg:text-base font-black text-gray-800 dark:text-white uppercase tracking-tighter truncate">Peer Search</h3>
+                 <p className="text-[7px] lg:text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate">Connected Peers</p>
+               </div>
                <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-lg border border-gray-100 dark:border-gray-700 min-w-[20px] text-center">
                   {allPeers.length}
                </span>
-
+            </div>
+            
+            <div className="flex items-center gap-2 lg:gap-3">
                {isLoading ? (
                   <div className="px-1.5 lg:px-3 py-0.5 lg:py-1 bg-blue-500/10 rounded-lg lg:rounded-xl border border-blue-500/20 flex items-center gap-1 lg:gap-2 shadow-sm">
                     <div className="w-1.5 h-1.5 lg:w-2 lg:h-2 rounded-full border-2 border-blue-500 border-t-transparent animate-spin"></div>
