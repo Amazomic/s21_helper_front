@@ -33,6 +33,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const [error, setError] = useState<string | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [showCampusDropdown, setShowCampusDropdown] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
   
   // Global Peers Lookup Map (to avoid N+1 requests)
   const [peersMap, setPeersMap] = useState<Map<string, { visibility: string }> | null>(null);
@@ -168,6 +169,11 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const projects = useMemo(() => getProjectsFromCache(), [cacheVersion]);
   const campuses = useMemo(() => getCampusesFromCache(), [cacheVersion]);
 
+  // Derived state for selected project
+  const selectedProject = useMemo(() => {
+    return projects.find(p => p.id === selectedProjectId);
+  }, [projects, selectedProjectId]);
+
   const cacheStatus = useMemo(() => {
     const hasProjects = projects.length > 0;
     const hasCampuses = campuses.length > 0;
@@ -202,8 +208,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
   const suggestions = useMemo(() => {
     const term = query.toLowerCase().trim();
     if (term.length < 2) return [];
-    const selected = projects.find(p => p.id === selectedProjectId);
-    if (selected && query === selected.code) return [];
+    if (selectedProject && query === selectedProject.code) return [];
 
     return projects
       .filter((p) => 
@@ -211,7 +216,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
         p.name.toLowerCase().includes(term)
       )
       .slice(0, 10);
-  }, [query, projects, selectedProjectId]);
+  }, [query, projects, selectedProject]);
 
   const fetchParticipants = useCallback(async (projectId: number, status: string, cId: string) => {
     setIsLoading(true);
@@ -467,14 +472,34 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                   <input
                     type="text"
                     value={query}
-                    onFocus={() => { setShowSuggestions(true); setCacheVersion(v => v + 1); }}
+                    onFocus={() => { setIsInputFocused(true); setShowSuggestions(true); setCacheVersion(v => v + 1); }}
+                    onBlur={() => setIsInputFocused(false)}
                     onChange={(e) => { setQuery(e.target.value); setShowSuggestions(true); }}
                     onKeyDown={handleKeyDown}
                     placeholder="Project code or ID..."
-                    className="w-full pl-8 lg:pl-10 pr-12 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner"
+                    className={`w-full pl-8 lg:pl-10 pr-16 py-2 lg:py-3 rounded-xl lg:rounded-2xl border-none bg-gray-100 dark:bg-gray-800 text-[10px] lg:text-xs font-black outline-none focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-gray-400 dark:text-white shadow-inner ${selectedProject && !isInputFocused && query === selectedProject.code ? 'text-transparent selection:bg-transparent placeholder:text-transparent' : ''}`}
                   />
+
+                  {/* Selected Project Name Overlay (Left) */}
+                  {selectedProject && !isInputFocused && query === selectedProject.code && (
+                    <div className="absolute inset-y-0 left-8 lg:left-10 right-16 flex items-center pointer-events-none z-10">
+                        <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-white truncate">
+                            {selectedProject.name}
+                        </span>
+                    </div>
+                  )}
+
+                  {/* Selected Project ID Badge (Right) */}
+                  {selectedProject && query === selectedProject.code && (
+                     <div className="absolute inset-y-0 right-1.5 flex items-center z-20 pointer-events-none">
+                        <span className="px-1.5 py-0.5 rounded-md bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[8px] font-black font-mono border border-gray-200 dark:border-gray-600 shadow-sm">
+                           #{selectedProject.id}
+                        </span>
+                     </div>
+                  )}
                   
-                  {/^\d+$/.test(query.trim()) && (
+                  {/* Manual ID Button (Only if query is numeric and no project selected to avoid overlap) */}
+                  {/^\d+$/.test(query.trim()) && !selectedProject && (
                      <div className="absolute inset-y-0 right-1.5 flex items-center z-20">
                         <button
                           onClick={handleManualIdSearch}
