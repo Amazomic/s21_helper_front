@@ -47,7 +47,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
   const handleProjectSelect = (p: Project) => {
     // Dispatch custom event for the search component
     window.dispatchEvent(new CustomEvent('s21:select_project', { 
-        detail: { id: p.id, code: p.title } 
+        detail: { id: p.id, code: p.title, name: p.title } 
     }));
     
     // Trigger callback (usually to close the menu)
