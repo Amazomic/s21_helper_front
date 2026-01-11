@@ -69,7 +69,7 @@ export const SkillsView: React.FC<SkillsViewProps> = ({ data, isLoading, error }
             <h3 className="font-black text-gray-800 dark:text-white group-hover:text-primary dark:group-hover:text-primary text-[10px] lg:text-xs uppercase tracking-[0.2em] transition-colors duration-300">
                 Skills
             </h3>
-            <span className="text-[9px] lg:text-[10px] font-bold text-gray-400 dark:text-gray-500 transition-colors">
+            <span className={`text-[9px] lg:text-[10px] font-bold ${sortedSkills.length > 0 ? 'text-primary dark:text-green-400' : 'text-gray-400'} transition-colors`}>
                 ({sortedSkills.length})
             </span>
          </div>
