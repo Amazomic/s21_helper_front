@@ -542,7 +542,7 @@ export const ProjectParticipantsSearch: React.FC<ProjectParticipantsSearchProps>
                               <span className="text-[6px] lg:text-[8px] text-gray-400 font-bold uppercase truncate">{p.name}</span>
                             </div>
                             <div className="flex-shrink-0">
-                               <span className="text-[8px] font-mono font-bold text-gray-400 dark:text-gray-600 group-hover:text-primary/70">#{p.id}</span>
+                               <span className="text-[10px] font-mono font-bold text-gray-400 dark:text-gray-600 group-hover:text-primary/70">#{p.id}</span>
                             </div>
                           </button>
                         ))}
