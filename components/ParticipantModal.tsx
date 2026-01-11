@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Button } from './ui/Button';
 import { getPeerTelegramInfo, notifyPeer } from '../services/apiService';
 import { PeerTelegramInfo } from '../types';
@@ -88,7 +89,7 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
     return status.replace(/_/g, ' ');
   };
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-pointer"
       onClick={onClose}
@@ -253,6 +254,7 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
           ) : null}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
