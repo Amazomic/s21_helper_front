@@ -81,12 +81,12 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
         onClick={() => setIsCollapsed(!isCollapsed)}
         className="relative z-10 flex items-center justify-between w-full text-left focus:outline-none group p-3 lg:p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-300 cursor-pointer"
       >
-         <div className="flex flex-col items-start gap-0.5">
+         <div className="flex items-baseline gap-2">
             <h3 className="font-black text-gray-800 dark:text-white group-hover:text-primary dark:group-hover:text-primary text-[10px] lg:text-xs uppercase tracking-tighter transition-colors duration-300">
                 Projects
             </h3>
-            <span className="text-[7px] lg:text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest opacity-60 transition-colors">
-                Active: {activeProjects.length}
+            <span className={`text-[9px] lg:text-[10px] font-bold ${activeProjects.length > 0 ? 'text-primary dark:text-green-400' : 'text-gray-400'} transition-colors`}>
+                ({activeProjects.length})
             </span>
          </div>
          
