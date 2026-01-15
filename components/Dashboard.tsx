@@ -255,7 +255,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <>
                   {/* Spinning Gradient Border */}
                   <div className="absolute inset-0 rounded-xl overflow-hidden">
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[conic-gradient(transparent,transparent,#248b65)] animate-spin"></div>
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,transparent_0_300deg,#248b65_360deg)] animate-[spin_1.5s_linear_infinite]"></div>
                   </div>
                   {/* Mask for Border */}
                   <div className="absolute inset-[2px] bg-white dark:bg-gray-900 rounded-[10px]"></div>
@@ -367,14 +367,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       />
 
       <ResultModal isOpen={modalOpen} onClose={() => setModalOpen(false)} data={modalData} error={modalError} title={modalTitle} />
-      
-      <style>{`
-        @keyframes loading {
-          0% { transform: translateX(-100%) scaleX(0); }
-          50% { transform: translateX(0) scaleX(1); }
-          100% { transform: translateX(100%) scaleX(0); }
-        }
-      `}</style>
     </div>
   );
 }
