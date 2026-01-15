@@ -253,11 +253,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
             >
               {isAnyLoading ? (
                 <>
-                  {/* Spinning Gradient Border - Extended Tail to 200deg for fuller circle appearance */}
+                  {/* Rotating Gradient Tail */}
                   <div className="absolute inset-0 rounded-xl overflow-hidden">
-                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300%] h-[300%] bg-[conic-gradient(from_0deg,transparent_0_160deg,#248b65_360deg)] animate-[spin_1.2s_linear_infinite]"></div>
+                     <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(transparent_180deg,#248b65_360deg)] animate-spin"></div>
                   </div>
-                  {/* Mask for Border */}
+                  {/* Mask for Border (Creates the line effect) */}
                   <div className="absolute inset-[2px] bg-white dark:bg-gray-900 rounded-[10px]"></div>
                   {/* Inner Tint */}
                   <div className="absolute inset-[2px] bg-primary/10 rounded-[10px]"></div>
@@ -272,10 +272,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 {username.charAt(0).toUpperCase()}
               </div>
               
-              {/* Telegram Status Dot - Removed mask so animation is visible behind it */}
+              {/* Telegram Status Dot (Restored) */}
               {telegramConfig?.isLinked && (
-                 <div className="absolute -bottom-1 -right-1 z-20 flex items-center justify-center">
-                    <div className={`w-3 h-3 rounded-full shadow-sm ${getTelegramStatusClass(telegramConfig.visibility)}`}></div>
+                 <div className="absolute -bottom-1 -right-1 z-20 w-4 h-4 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                    <div className={`w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${getTelegramStatusClass(telegramConfig.visibility)}`}></div>
                  </div>
               )}
             </button>
