@@ -55,6 +55,12 @@ input[type=number] {
   appearance: textfield; 
 }
 
+/* Hide native password reveal button in Edge/IE/Telegram Desktop */
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
 .global-block-padding {
   padding: var(--block-padding);
 }
