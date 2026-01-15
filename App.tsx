@@ -32,8 +32,23 @@ const App: React.FC = () => {
   const handleLogout = useCallback(() => {
     setToken(null);
     setUsername('');
+    
+    // Keys to keep: Global Data (Graph, Campuses, Peers) and UI Preferences
+    const keysToPreserve = [
+      's21_graph_cache',
+      's21_graph_cache_timestamp',
+      's21_campuses_cache', 
+      's21_campuses_cache_timestamp',
+      's21_tg_connected_cache',
+      's21_tg_connected_cache_timestamp',
+      's21_debug_enabled'
+    ];
+
     Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('s21_')) localStorage.removeItem(key);
+      // Remove s21_ keys unless they are in the preserved list (Tokens, User Profile, User Skills, etc.)
+      if (key.startsWith('s21_') && !keysToPreserve.includes(key)) {
+        localStorage.removeItem(key);
+      }
     });
   }, []);
 
