@@ -49,6 +49,29 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
        // Reset state
        setPeerInfo(null);
        setNotifyStatus('idle');
+
+       // Check local cache to see if this peer has Telegram linked
+       // This prevents 404 requests for users who are not linked
+       let shouldFetch = false;
+       try {
+         const cached = localStorage.getItem('s21_tg_connected_cache');
+         if (cached) {
+           const peers = JSON.parse(cached);
+           if (Array.isArray(peers) && peers.some((p: any) => p.school_login === data.login)) {
+             shouldFetch = true;
+           }
+         }
+       } catch (e) {
+         // If cache fails, default to not fetching to be safe, or could default to true. 
+         // Given the 404 issue, defaulting to false (safe) is better if list is supposed to be comprehensive.
+         console.warn("Error reading peers cache in modal", e);
+       }
+
+       if (!shouldFetch) {
+         setLoadingPeer(false);
+         return;
+       }
+
        setLoadingPeer(true);
 
        // Check peer availability
