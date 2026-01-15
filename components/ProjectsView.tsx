@@ -100,7 +100,7 @@ export const ProjectsView: React.FC<ProjectsViewProps> = ({ data, isLoading, err
       {/* Updated to use Grid Rows for smooth auto-height animation */}
       <div className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${isCollapsed ? 'grid-rows-[0fr] opacity-0' : 'grid-rows-[1fr] opacity-100'}`}>
         <div className="overflow-hidden">
-          <div className="px-3 lg:px-4 pb-3 lg:pb-4 space-y-2">
+          <div className="px-3 lg:px-4 pt-2 pb-3 lg:pb-4 space-y-2">
               {activeProjects.length === 0 ? (
                   <div className="text-center py-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                       No active projects
