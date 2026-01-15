@@ -296,6 +296,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     campusId={userData?.campusId || userData?.campus?.id} 
                   />
              </div>
+             
+             {/* External Link Button */}
+             <div className="mt-8 flex justify-center pb-4">
+                <a 
+                   href="https://platform.21-school.ru/" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="group flex items-center gap-2 px-6 py-3 rounded-2xl bg-white dark:bg-gray-900 text-gray-400 dark:text-gray-500 text-[10px] font-black uppercase tracking-widest border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 dark:hover:border-primary/20 hover:text-primary dark:hover:text-primary transition-all duration-300 transform active:scale-95"
+                >
+                   School21 - origin
+                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 opacity-50 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                   </svg>
+                </a>
+             </div>
           </div>
         ) : (
           <DebugView 
