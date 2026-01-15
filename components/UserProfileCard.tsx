@@ -50,37 +50,37 @@ export const UserProfileCard: React.FC<UserProfileProps> = ({ data, points, load
         {/* Compact Single Line Info Bar */}
         <div className="flex items-stretch gap-1 lg:gap-2">
             {/* Level Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-primary/5 dark:bg-primary/10 rounded-xl px-1.5 py-1 lg:py-2 min-w-[2.4rem] lg:min-w-[3.2rem] border border-primary/10 shadow-sm">
-                <span className="text-base lg:text-xl font-black text-primary dark:text-green-400 leading-none tracking-tighter">
+            <div className="flex-none flex flex-col items-center justify-center bg-primary/5 dark:bg-primary/10 rounded-xl px-1.5 py-2 min-w-[2.4rem] lg:min-w-[3.2rem] border border-primary/10 shadow-sm gap-0.5">
+                <span className="text-[10px] lg:text-xs font-black text-primary dark:text-green-400 leading-none tracking-tighter">
                     {levelInteger}
                 </span>
-                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">LVL</span>
+                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight">LVL</span>
             </div>
 
             {/* Coalition Box */}
-            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-1.5 py-1 border border-gray-100 dark:border-gray-800/50 shadow-sm min-w-0">
-                <span className="text-[9px] lg:text-xs font-black text-gray-800 dark:text-white truncate w-full text-center leading-tight">
+            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-800/40 rounded-xl px-1.5 py-2 border border-gray-100 dark:border-gray-800/50 shadow-sm min-w-0 gap-0.5">
+                <span className="text-[10px] lg:text-xs font-black text-gray-800 dark:text-white truncate w-full text-center leading-none">
                     {coalition ? coalition.name : 'Freelance'}
                 </span>
-                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight truncate w-full text-center">
+                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight truncate w-full text-center leading-none">
                     R:{coalition ? (coalition.rank ?? 'null') : 'none'}
                 </span>
             </div>
 
             {/* PRP Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-blue-500/10 shadow-sm">
+            <div className="flex-none flex flex-col items-center justify-center bg-blue-500/5 rounded-xl px-1.5 py-2 min-w-[2.4rem] lg:min-w-[3rem] border border-blue-500/10 shadow-sm gap-0.5">
                 <span className="text-[10px] lg:text-xs font-black text-blue-600 dark:text-blue-400 leading-none">
                     {points?.peerReviewPoints || 0}
                 </span>
-                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">PRP</span>
+                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight">PRP</span>
             </div>
 
             {/* Coins Box */}
-            <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-1.5 py-1 min-w-[2.4rem] lg:min-w-[3rem] border border-amber-500/10 shadow-sm">
+            <div className="flex-none flex flex-col items-center justify-center bg-amber-500/5 rounded-xl px-1.5 py-2 min-w-[2.4rem] lg:min-w-[3rem] border border-amber-500/10 shadow-sm gap-0.5">
                 <span className="text-[10px] lg:text-xs font-black text-amber-500 leading-none">
                     {points?.coins || 0}
                 </span>
-                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight mt-0.5">COIN</span>
+                <span className="text-[6px] lg:text-[8px] font-bold text-gray-400 uppercase tracking-tight">COIN</span>
             </div>
         </div>
 
