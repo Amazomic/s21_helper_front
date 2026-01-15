@@ -245,20 +245,36 @@ export const Dashboard: React.FC<DashboardProps> = ({
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 pb-10 transition-colors duration-300 font-sans text-gray-900 dark:text-gray-100">
       <header className="bg-white dark:bg-gray-900 shadow-sm sticky top-0 z-40 border-b dark:border-gray-800 transition-colors">
-        {isAnyLoading && (
-          <div className="absolute top-0 left-0 w-full h-1 overflow-hidden">
-            <div className="h-full bg-primary animate-[loading_1.5s_infinite] origin-left scale-x-0 w-[40%]"></div>
-          </div>
-        )}
         <div className="w-full px-4 sm:px-6 py-3 flex justify-between items-center">
           <div className="flex items-center gap-3">
             <button 
               onClick={() => setUserMenuOpen(true)}
-              className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 hover:scale-105 active:scale-95 transition-transform cursor-pointer relative"
+              className="w-10 h-10 relative group hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center justify-center"
             >
-              {username.charAt(0).toUpperCase()}
+              {isAnyLoading ? (
+                <>
+                  {/* Spinning Gradient Border */}
+                  <div className="absolute inset-0 rounded-xl overflow-hidden">
+                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200%] h-[200%] bg-[conic-gradient(transparent,transparent,#248b65)] animate-spin"></div>
+                  </div>
+                  {/* Mask for Border */}
+                  <div className="absolute inset-[2px] bg-white dark:bg-gray-900 rounded-[10px]"></div>
+                  {/* Inner Tint */}
+                  <div className="absolute inset-[2px] bg-primary/10 rounded-[10px]"></div>
+                </>
+              ) : (
+                /* Static Border/Background */
+                <div className="absolute inset-0 bg-primary/10 border border-primary/20 rounded-xl transition-all"></div>
+              )}
+
+              {/* Content */}
+              <div className="relative z-10 w-full h-full flex items-center justify-center text-primary font-bold text-lg">
+                {username.charAt(0).toUpperCase()}
+              </div>
+              
+              {/* Telegram Status Dot */}
               {telegramConfig?.isLinked && (
-                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
+                 <div className="absolute -bottom-1 -right-1 z-20 w-4 h-4 bg-white dark:bg-gray-900 rounded-full flex items-center justify-center">
                     <div className={`w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-900 ${getTelegramStatusClass(telegramConfig.visibility)}`}></div>
                  </div>
               )}
