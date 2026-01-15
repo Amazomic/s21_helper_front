@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { loginUser, linkTelegramAccount } from '../services/apiService';
+import { loginUser, linkTelegramAccount, fetchTelegramSettings } from '../services/apiService';
 import { Button } from './ui/Button';
 import { AuthResponse } from '../types';
 
@@ -36,7 +36,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLoginSuccess }) => {
       // 2. Auto-Link Telegram if we are in the Telegram WebApp environment
       if (window.Telegram?.WebApp?.initData) {
          try {
-           await linkTelegramAccount(data.access_token);
+           // Check status first to avoid redundant linking calls
+           const settings = await fetchTelegramSettings(data.access_token);
+           if (!settings.isLinked) {
+              await linkTelegramAccount(data.access_token);
+           }
          } catch (linkError) {
            console.warn("Auto-link failed (non-fatal):", linkError);
            // We do not block login if linking fails.
