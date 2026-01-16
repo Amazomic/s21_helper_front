@@ -83,11 +83,21 @@ export const fetchData = async (endpoint: string, token: string | null, options:
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`${response.status}: ${errorText}`);
+    // Truncate error message to avoid flooding UI with HTML if proxy returns 50x page
+    const safeError = errorText.length > 200 ? errorText.substring(0, 200) + '...' : errorText;
+    throw new Error(`${response.status}: ${safeError}`);
   }
 
   const text = await response.text();
-  return text ? JSON.parse(text) : null;
+  if (!text) return null;
+
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("API returned non-JSON response:", text.substring(0, 100));
+    // Graceful fallback prevents app crash on 502/504 HTML responses
+    throw new Error(`Invalid API response format (Status ${response.status})`);
+  }
 };
 
 // --- Telegram Logic ---

@@ -105,6 +105,10 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
     onClose();
   };
 
+  const isValidTelegramUsername = (username?: string) => {
+    return username && /^[a-zA-Z0-9_]{5,32}$/.test(username);
+  };
+
   if (!isOpen) return null;
 
   const getStatusColor = (status: string) => {
@@ -208,7 +212,7 @@ export const ParticipantModal: React.FC<ParticipantModalProps> = ({ isOpen, onCl
               {/* Telegram Contact Actions */}
               {!loadingPeer && peerInfo?.found && (
                 <div className="w-full mt-1">
-                    {peerInfo.can_message && peerInfo.telegram_username ? (
+                    {peerInfo.can_message && isValidTelegramUsername(peerInfo.telegram_username) ? (
                          <a 
                            href={`https://t.me/${peerInfo.telegram_username}`} 
                            target="_blank" 
