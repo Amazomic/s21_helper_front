@@ -20,7 +20,8 @@ export const TelegramStatusWidget: React.FC<TelegramStatusWidgetProps> = ({ conf
 
   const handleLink = async () => {
     if (!isTelegramContext) {
-      window.open('https://t.me/s21_helper_bot', '_blank');
+      // Security fix: Added noopener,noreferrer
+      window.open('https://t.me/s21_helper_bot', '_blank', 'noopener,noreferrer');
       return;
     }
     
