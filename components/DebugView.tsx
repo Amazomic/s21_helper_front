@@ -549,7 +549,7 @@ export const DebugView: React.FC<DebugViewProps> = ({
             </div>
             <DebugRow method="GET" path="/v1/campuses/{campusId}/participants" desc="Participants in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/participants?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Participants'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/participants?')} isAnyLoading={isAnyLoading} />
             <DebugRow method="GET" path="/v1/campuses/{campusId}/coalitions" desc="Coalitions in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/coalitions?limit=${campusLimit || 50}&offset=${campusOffset || 0}`, 'Campus Coalitions'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/coalitions?')} isAnyLoading={isAnyLoading} />
-            <DebugRow method="GET" path="/v1/campuses/{campusId}/clusters" desc="Clusters in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/clusters/${id}/clusters`, 'Campus Clusters'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/clusters')} isAnyLoading={isAnyLoading} />
+            <DebugRow method="GET" path="/v1/campuses/{campusId}/clusters" desc="Clusters in campus" onClick={() => { const id = getEncoded(campusSearchId, 'Campus ID'); if(id) onApiCall(`/v1/campuses/${id}/clusters`, 'Campus Clusters'); }} isLoading={loadingEndpoint?.includes?.('/campuses') && loadingEndpoint?.includes?.('/clusters')} isAnyLoading={isAnyLoading} />
           </DebugSection>
         </div>
       </div>
